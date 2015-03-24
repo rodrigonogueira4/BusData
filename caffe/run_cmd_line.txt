@@ -1,0 +1,5 @@
+nohup /opt/caffe/build/tools/caffe.bin train -gpu 0 -solver=/home/rfn/NYU/BusRio/codes/textxml/caffe/solver.prototxt > /home/rfn/NYU/BusRio/codes/textxml/caffe/temp.out 2>&1 &
+
+nohup /opt/caffe/build/tools/caffe.bin train -solver=/home/rfn/NYU/BusRio/codes/textxml/caffe/solver.prototxt > /home/rfn/NYU/BusRio/codes/textxml/caffe/temp.out 2>&1 &
+
+nohup /opt/caffe/build/tools/caffe.bin train -gpu 0 -weights=/home/rfn/NYU/BusRio/busrio_iter_1000000.caffemodel -solver=/home/rfn/NYU/BusRio/codes/textxml/caffe/solver.prototxt > /home/rfn/NYU/BusRio/codes/textxml/caffe/temp.out 2>&1 &

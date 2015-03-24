@@ -1,0 +1,171 @@
+  
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Circles</title>
+    <style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+	<script src="outliers.js"></script>
+    <script>
+// This example creates circles on the map, representing
+// populations in North America.
+
+// First, create an object containing LatLng and population for each city.
+/*var citymap = {};
+citymap['chicago'] = {
+  center: new google.maps.LatLng(41.878113, -87.629798),
+  population: 2714856
+};
+citymap['newyork'] = {
+  center: new google.maps.LatLng(40.714352, -74.005973),
+  population: 8405837
+};
+citymap['losangeles'] = {
+  center: new google.maps.LatLng(34.052234, -118.243684),
+  population: 3857799
+};
+citymap['vancouver'] = {
+  center: new google.maps.LatLng(49.25, -123.1),
+  population: 603502
+};
+citymap['teste'] = {
+  center: new google.maps.LatLng(25.774252, -80.190262),
+  population: 0.15
+};*/
+		var map;
+		var infowindow;
+		var circles = new Array();
+		var lines = new Array();
+
+		var addListenersOnCircle = function(circle) {
+			google.maps.event.addListener(circle, 'click', function (event) {
+				for (var i = 0; i < circles.length; i++)
+				{
+					if (Math.floor(i/20) == circle.id)
+					{
+						circles[i].setOptions({strokeColor: 'blue', fillColor: 'blue'})
+					}
+					else 
+					{
+						circles[i].setOptions({strokeColor: 'red', fillColor: 'red'})
+					}
+				}
+				var line = outliers_points[circle.id]['Linha'];
+				for (element in lines)
+				{
+					if (element != line)
+					{
+						for (var j = 0; j < Object.keys(lines[element]).length; j++)
+						{
+							lines[element][j].setMap(null);
+						}
+					}
+				}
+				for (var j = 0; j < Object.keys(lines[line]).length; j++)
+				{
+					lines[line][j].setOptions({strokeColor: 'yellow', fillColor: 'yellow'});
+					lines[line][j].setMap(map);
+				}
+				infowindow.setContent("Linha: " + outliers_points[circle.id]['Linha'] + "<p>Linhapred: " + outliers_points[circle.id]['Linhapred'] + "</p>" + "<p> LinhaAccu: " + outliers_points[circle.id]['LinhaAccu'] + "</p>");
+				infowindow.setPosition(event.latLng);
+				infowindow.open(map);
+			});  
+		}
+
+		function initialize() {
+			// Create the map.
+			var mapOptions = {
+				zoom: 14,
+				center: new google.maps.LatLng(-19.839794, -36.826138),
+				mapTypeId: google.maps.MapTypeId.TERRAIN
+			};
+
+			map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+			infowindow = new google.maps.InfoWindow({
+				content: ''
+			});
+			// Construct the circle for each value in citymap.
+			// Note: We scale the area of the circle based on the population.
+			//for (var city in citymap) {
+			//console.log(map_center);
+			var i = 0;
+			for (i = 0; i < Object.keys(outliers_points).length; i++) {
+				var color = outliers_points[i]['rank'];
+				var colorvalue;
+				colorvalue = 'red';
+				/*if (color < 6)
+				{
+					colorvalue = 'blue';
+				}
+				else if (color > 5 && color < 11)
+				{
+					colorvalue = 'green';
+				}				
+				else if (color > 10 && color < 16)
+				{
+					colorvalue = 'yellow';
+				}
+				else if (color > 15)
+				{
+					colorvalue = 'red';
+				}*/
+				for (var j = 0; j < 20; j++)
+				{
+					var populationOptions = {
+						strokeColor: colorvalue,
+						strokeOpacity: 0.8,
+						strokeWeight: 2,
+						fillColor: colorvalue,
+						fillOpacity: 0.35,
+						map: map,
+						//center: citymap[city].center,
+						center: new google.maps.LatLng(outliers_points[i]['LatitudePonto_' + j.toString()], outliers_points[i]['LongitudePonto_' + j.toString()]),
+						radius: Math.sqrt(0.2) * 100,
+						id: i
+						//radius: Math.sqrt(citymap[city].population) * 100
+					};
+					circles[i * 20 + j] = new google.maps.Circle(populationOptions);
+					addListenersOnCircle(circles[i * 20 + j]);
+				}
+
+			}
+			for (element in line_points)
+			{
+				lines[element] = new Array();
+				for (i = 0; i < Object.keys(line_points[element]).length; i++)
+				{
+					var populationOptions = {
+						strokeColor: 'red',
+						strokeOpacity: 0.8,
+						strokeWeight: 2,
+						fillColor: 'red',
+						fillOpacity: 0.35,
+						map: null,
+						//center: citymap[city].center,
+						center: new google.maps.LatLng(line_points[element][i]['latitude'], line_points[element][i]['longitude']),
+						radius: Math.sqrt(0.2) * 100,
+						id: i
+						//radius: Math.sqrt(citymap[city].population) * 100
+					};
+					lines[element][i] = new google.maps.Circle(populationOptions);
+				}
+			}
+		}
+
+		google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+  </body>
+</html>
