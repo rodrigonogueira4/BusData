@@ -64,16 +64,18 @@ html, body, #map {
 <table>
 <div id="map"></div>
 <script type="text/javascript">
-
+    function parseDate(datestr){
+        return Date.parse(datestr.substring(0, 19).replace(" ", "T"));
+    }
 	// Create the Google Map…
 	var map = new google.maps.Map(d3.select("#map").node(), {
-	  zoom: 8,
+	  zoom: 9,
 	  center: new google.maps.LatLng(-22.911773, -43.230199),
 	  mapTypeId: google.maps.MapTypeId.TERRAIN
 	});
-  /*
+  
   // Load the raw data. When the data comes back, create an overlay.
-  d3.csv("IBM0015.csv", function(data) {
+  /*d3.csv("IBM0015.csv", function(data) {
 
     data = data.filter(function(row) {
         //return row['Linha'] == '2335' && (row['Hora'] == '9' || row['Hora'] == '10');
@@ -95,9 +97,13 @@ html, body, #map {
         var marker = layer.selectAll("svg")
           .data(d3.entries(data))
           .each(transform) // update existing markers
-        .enter().append("svg:svg")
+          .enter().append("svg:svg")
           .each(transform)
-          .attr("class", "marker");
+          .attr("class", "marker")
+          .on("click", function(d, index) {
+              console.log("Selected node");
+              alert("fwefwe");
+           });
 
         // Add a circle.
         marker.append("svg:circle")
@@ -111,8 +117,8 @@ html, body, #map {
         //  .attr("y", padding)
         //  .attr("dy", ".31em")
         //  .text(function(d) { return d.value['Linha']; });
-
-        function transform(d) {
+    
+          function transform(d) {
           //d = new google.maps.LatLng(d.value[1], d.value[0]);
           d = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
           d = projection.fromLatLngToDivPixel(d);
@@ -125,17 +131,39 @@ html, body, #map {
 
     // Bind our overlay to the map…
     overlay.setMap(map);
-  });
-  */
+  });*/
+  
 
   // Load the outlier data. When the data comes back, create an overlay.
   d3.csv("output_1_jan.csv", function(data) {
 
     data = data.filter(function(row) {
-        return row['Linha'] == '2335';
-    })
-    var overlay = new google.maps.OverlayView();
+        return row['Linha'] == '2335' ; //&& row['Hora'] == '0';
+    });
+    //data = [data[150]];
+    var data2 = [];
+    k=0;
+    //pts musb be structured as rows only
+    for (row in data){
+        var minreftime = parseDate(data[row]['TimeStamp_19']); 
+        var minreftime = parseDate(data[row]['TimeStamp_0']); 
+        
+        for (i =0; i<20; i++){
+            
+            var timestamp = parseDate(data[row]['TimeStamp_'+i]);
 
+            data2[k] = {
+                  TimeStampPercentage: (timestamp - minreftime)/minreftime, 
+                  //TimeStamp:data[row]['TimeStamp_'+i],
+                  LatitudePonto:data[row]['LatitudePonto_'+i],
+                  LongitudePonto:data[row]['LongitudePonto_'+i],
+                  row:row
+                };
+            k=k+1;
+        }
+        break
+    }
+    var overlay = new google.maps.OverlayView();
     // Add the container when the overlay is added to the map.
     overlay.onAdd = function() {
       var layer = d3.select(this.getPanes().overlayLayer).append("div")
@@ -147,46 +175,51 @@ html, body, #map {
         var projection = this.getProjection(),
           padding = 10;
         
-        for (i =0; i<20; i++){
-        var marker = layer.selectAll("svg")
-          .data(d3.entries(data))
-          .each(
-              function (d) {
-                d = new google.maps.LatLng(+d.value['LatitudePonto_'+i], +d.value['LongitudePonto_'+i]);
-                d = projection.fromLatLngToDivPixel(d);
-                return d3.select(this)
-                  .style("left", (d.x - padding) + "px")
-                  .style("top", (d.y - padding) + "px");
-              }
-          )
-          .enter().append("svg:svg")
-          .on("click", function(d, index) {
-              console.log("Selected node");
-           })
-          .attr("class", "marker");
-  
-        // Add a circle.
-        marker.append("svg:circle")
-          .attr("r", 4.5)
-          .attr("cx", padding)
-          .attr("cy", padding);
-        
-        }
-        //Add a label.
-        marker.append("svg:text")
-          .attr("x", padding + 7)
-          .attr("y", padding)
-          .attr("dy", ".31em")
-          .text(function(d) { return "fwefe"; });
+            var marker = layer.selectAll("svg")
+              .data(d3.entries(data2))
+              .each(
+                  function (d) {
+                    d = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
+                    d = projection.fromLatLngToDivPixel(d);
+                    return d3.select(this)
+                      .style("left", (d.x - padding) + "px")
+                      .style("top", (d.y - padding) + "px");
+                  }
+              )
+              .enter().append("svg:svg")
+              .each(
+                  function (d) {
+                    d = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
+                    d = projection.fromLatLngToDivPixel(d);
+                    return d3.select(this)
+                      .style("left", (d.x - padding) + "px")
+                      .style("top", (d.y - padding) + "px");
+                  }
+              )
+              .on("click", function() {
+                  console.log("Selected node");
+                  alert("re");
+               })
+              .attr("class", "marker");
+            
+            // Add a circle.
+            marker.append("svg:circle")
+              .attr("r", function(d) { return 5./*3.0 + 5.0 * d.value['TimeStampPercentage']*/ })
+              .attr("cx", padding)
+              .attr("cy", padding);
 
-        //function transform(d) {
-        //  
-        //  d = new google.maps.LatLng(+d.value['LatitudePonto_0'], +d.value['LongitudePonto_0']);
-        //  d = projection.fromLatLngToDivPixel(d);
-        //  return d3.select(this)
-        //      .style("left", (d.x - padding) + "px")
-        //      .style("top", (d.y - padding) + "px");
-        //}
+
+            //Add a label.
+            marker.append("svg:text")
+              .attr("x", padding + 7)
+              .attr("y", padding)
+              .attr("dy", ".31em")
+              .on("click", function() {
+                  console.log("Selected node");
+                  alert("re");
+               })
+               .text(function(d) { return d.value['row'] });
+          
       };
     };
 
