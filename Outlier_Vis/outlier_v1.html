@@ -3,7 +3,7 @@
   <head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
-    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?1.29.1"></script>
+    <script type="text/javascript" src="d3.v2.js"></script>
     <style type="text/css">
 
 html, body {
@@ -85,7 +85,7 @@ html, body {
 	var map = new google.maps.Map(d3.select("#map").node(), {
 	  zoom: 9,
 	  center: new google.maps.LatLng(-22.911773, -43.230199),
-	  mapTypeId: google.maps.MapTypeId.TERRAIN
+	  //mapTypeId: google.maps.MapTypeId.TERRAIN
 	});
   
     // Load the raw data. When the data comes back, create an overlay.
@@ -93,11 +93,6 @@ html, body {
         d3.csv("IBM0015.csv", function(data) {
 
         data = data.filter(function(row,index) {
-            
-            if (index%samplingRate !=0){
-                return false;
-            } 
-            
             var contains = false;
             for (i in selectedLines ){
                 if (row['Linha'] == selectedLines[i]){
@@ -106,6 +101,19 @@ html, body {
             }
             return contains;
         })
+        
+        //do sampling
+        var samplingRate = Math.floor(data.length/maxPts);
+        if (samplingRate<1){
+            samplingRate = 1;
+        }
+        data = data.filter(function(row,index) { 
+            if (index%samplingRate != 0){
+                return false;
+            }
+            return true;
+        })    
+        
         var overlay = new google.maps.OverlayView();
 
         // Add the container when the overlay is added to the map.
@@ -303,7 +311,7 @@ html, body {
       loadPtsRaw(selectedLines);
       loadPtsOutliers(selectedLines);
   }
-  var samplingRate = 10;
+  var maxPts = 500;
   var overlay;   
   loadLstboxFromOutliers();
  
