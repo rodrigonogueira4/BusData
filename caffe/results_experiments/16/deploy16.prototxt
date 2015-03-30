@@ -1,49 +1,20 @@
 name: "BUS_RIO"
-layers {
-  name: "data"
-  type: HDF5_DATA
-  top: "data"
-  top: "label"
-  hdf5_data_param {
-    source: "/work/rfn216/bus_rio/train_with_null_lines.h5.txt"
-    batch_size: 50
-  }
-  include: { phase: TRAIN }
-}
-layers {
-  name: "data"
-  type: HDF5_DATA
-  top: "data"
-  top: "label"
-  hdf5_data_param {
-  source: "/work/rfn216/bus_rio/test_with_null_lines.h5.txt"
-	batch_size: 50
-  }
-  include: { phase: TEST }
-}
+input: "data"
+input_dim: 1
+input_dim: 3
+input_dim: 1
+input_dim: 20
 layers {
   name: "conv1-1"
   type: CONVOLUTION
   bottom: "data"
   top: "conv1-1"
-  blobs_lr: 1
-  blobs_lr: 2
-  weight_decay: 1
-  weight_decay: 0
   convolution_param {
     num_output: 64
     pad_h: 0
     pad_w: 1
     kernel_h: 1
 	kernel_w: 3
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 0
-    }
   }
 }
 layers {
@@ -57,24 +28,12 @@ layers {
   type: CONVOLUTION
   bottom: "conv1-1"
   top: "conv1-2"
-  blobs_lr: 1
-  blobs_lr: 2
-  weight_decay: 1
-  weight_decay: 0
   convolution_param {
     num_output: 64
     pad_h: 0
     pad_w: 1
     kernel_h: 1
 	kernel_w: 3
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 0
-    }
   }
 }
 layers {
@@ -88,24 +47,12 @@ layers {
   type: CONVOLUTION
   bottom: "conv1-2"
   top: "conv1-3"
-  blobs_lr: 1
-  blobs_lr: 2
-  weight_decay: 1
-  weight_decay: 0
   convolution_param {
     num_output: 64
     pad_h: 0
     pad_w: 1
     kernel_h: 1
 	kernel_w: 3
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 0
-    }
   }
 }
 layers {
@@ -132,24 +79,12 @@ layers {
   type: CONVOLUTION
   bottom: "pool1"
   top: "conv2-1"
-  blobs_lr: 1
-  blobs_lr: 2
-  weight_decay: 1
-  weight_decay: 0
   convolution_param {
     num_output: 128
     pad_h: 0
     pad_w: 1
     kernel_h: 1
 	kernel_w: 3
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 0
-    }  
   }
 }
 layers {
@@ -163,24 +98,12 @@ layers {
   type: CONVOLUTION
   bottom: "conv2-1"
   top: "conv2-2"
-  blobs_lr: 1
-  blobs_lr: 2
-  weight_decay: 1
-  weight_decay: 0
   convolution_param {
     num_output: 128
     pad_h: 0
     pad_w: 1
     kernel_h: 1
 	  kernel_w: 3
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 0
-    }  
   }
 }
 layers {
@@ -194,24 +117,12 @@ layers {
   type: CONVOLUTION
   bottom: "conv2-2"
   top: "conv2-3"
-  blobs_lr: 1
-  blobs_lr: 2
-  weight_decay: 1
-  weight_decay: 0
   convolution_param {
     num_output: 128
     pad_h: 0
     pad_w: 1
     kernel_h: 1
 	  kernel_w: 3
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 0
-    }  
   }
 }
 layers {
@@ -238,20 +149,8 @@ layers {
   type: INNER_PRODUCT
   bottom: "pool2"
   top: "fc3"
-  blobs_lr: 1
-  blobs_lr: 2
-  weight_decay: 1
-  weight_decay: 0
   inner_product_param {
     num_output: 2000
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 1
-    }
   }
 }
 layers {
@@ -274,20 +173,8 @@ layers {
   type: INNER_PRODUCT
   bottom: "fc3"
   top: "fc4"
-  blobs_lr: 1
-  blobs_lr: 2
-  weight_decay: 1
-  weight_decay: 0
   inner_product_param {
     num_output: 2000
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 1
-    }
   }
 }
 layers {
@@ -308,22 +195,10 @@ layers {
 layers {
   bottom: "fc4"
   top: "fc5"
-  name: "fc5-new"
+  name: "fc5"
   type: INNER_PRODUCT
-  blobs_lr: 10
-  blobs_lr: 20
-  weight_decay: 1
-  weight_decay: 0
   inner_product_param {
     num_output: 487
-    weight_filler {
-	type: "gaussian"
-	std: 0.01
-    }
-    bias_filler {
-	type: "constant"
-	value: 0
-    }
   }
 }
 layers {
@@ -346,9 +221,8 @@ layers {
   include: { phase: TEST }
 }
 layers {
-  name: "loss"
-  type: SOFTMAX_LOSS
+  name: "prob"
+  type: SOFTMAX
   bottom: "fc5"
-  bottom: "label"
-  top: "loss"
+  top: "prob"
 }

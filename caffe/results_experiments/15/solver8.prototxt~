@@ -10,5 +10,5 @@ max_iter: 2000000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 100000
-snapshot_prefix: "/work/rfn216/busrio/busrio8"
+snapshot_prefix: "/work/rfn216/bus_rio/busrio8"
 solver_mode: GPU
