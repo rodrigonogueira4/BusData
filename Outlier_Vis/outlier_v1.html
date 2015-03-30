@@ -169,7 +169,7 @@ html, body {
     
   function loadPtsOutliers(selectedLines){
       // Load the outlier data. When the data comes back, create an overlay.
-      d3.csv("output2.csv", function(data) {
+      d3.csv(outliersfile, function(data) {
         
         data = data.filter(function(row,index) {
             var contains = false;
@@ -276,7 +276,7 @@ html, body {
   }
     
   function loadLstboxFromOutliers(){
-      d3.csv("output2.csv", function(data) {
+      d3.csv(outliersfile, function(data) {
 
         var data2 = [];
         var lines_outliers = {};  
@@ -298,7 +298,7 @@ html, body {
         }      
      });
   }          
-  
+  var outliersfile = "output_1_jan.csv";
   function loadPts(){
       
       var lstbox = document.getElementById("lstbox_lines");
