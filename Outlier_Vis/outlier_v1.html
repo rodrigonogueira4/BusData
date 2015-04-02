@@ -87,12 +87,15 @@ html, body {
 	  center: new google.maps.LatLng(-22.911773, -43.230199),
 	  //mapTypeId: google.maps.MapTypeId.TERRAIN
 	});
-  
+    
     // Load the raw data. When the data comes back, create an overlay.
     function loadPtsRaw(selectedLines){
-        d3.csv("IBM0015.csv", function(data) {
-
-        data = data.filter(function(row,index) {
+        d3.text("http://localhost:8000/data_separated_by_line_and_day/"+selectedLines[0]+"/4-1-2014", function(text) {
+        var data = d3.csv.parseRows(text);
+        
+        //d3.csv("http://localhost:8000/IBM0015.csv", function(data) {
+        //d3.csv("http://localhost:8000/data_separated_by_line_and_day/"+selectedLines[0]+"/4-1-2014", function(data) {
+        /*data = data.filter(function(row,index) {
             var contains = false;
             for (i in selectedLines ){
                 if (row['Linha'] == selectedLines[i]){
@@ -100,7 +103,7 @@ html, body {
                 }
             }
             return contains;
-        })
+        });*/
         
         //do sampling
         var samplingRate = Math.floor(data.length/maxPts);
@@ -112,13 +115,11 @@ html, body {
                 return false;
             }
             return true;
-        })    
-        
+        });
         var overlay = new google.maps.OverlayView();
-
         // Add the container when the overlay is added to the map.
         overlay.onAdd = function() {
-          var layer = d3.select(this.getPanes().overlayLayer).append("div")
+          var layer = d3.select(this.getPanes().overlayMouseTarget).append("div")
             .attr("class", "rawpt");
 
           // Draw each marker as a separate SVG element.
@@ -132,15 +133,11 @@ html, body {
               .each(transform) // update existing markers
               .enter().append("svg:svg")
               .each(transform)
-              .attr("class", "marker")
-              .on("click", function(d, index) {
-                  console.log("Selected node");
-                  alert("fwefwe");
-               });
+              .attr("class", "marker");
 
             // Add a circle.
             marker.append("svg:circle")
-              .attr("r", 4.5)
+              .attr("r", 3.0)
               .attr("cx", padding)
               .attr("cy", padding);
 
@@ -151,13 +148,13 @@ html, body {
             //  .attr("dy", ".31em")
             //  .text(function(d) { return d.value['Linha']; });
 
-              function transform(d) {
-              //d = new google.maps.LatLng(d.value[1], d.value[0]);
-              d = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-              d = projection.fromLatLngToDivPixel(d);
-              return d3.select(this)
-                  .style("left", (d.x - padding) + "px")
-                  .style("top", (d.y - padding) + "px");
+            function transform(d) {
+                d2 = new google.maps.LatLng(+d.value[9], +d.value[10]);
+                 //d2 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
+                d2 = projection.fromLatLngToDivPixel(d2);
+                return d3.select(this)
+                  .style("left", (d2.x - padding) + "px")
+                  .style("top", (d2.y - padding) + "px");
             }
           };
         };
@@ -185,8 +182,8 @@ html, body {
         k=0;
         //pts must be structured as rows only
         for (row in data){
-            console.log(data[row]['TimeStamp_19']);
-            console.log(data[row]['TimeStamp_0']);
+            console.log("id"+row+": "+data[row]['TimeStamp_19']);
+            console.log("id"+row+": "+data[row]['TimeStamp_0']);
             var minreftime = parseDate(data[row]['TimeStamp_19']); 
             var maxreftime = parseDate(data[row]['TimeStamp_0']); 
 
@@ -208,12 +205,14 @@ html, body {
         // Add the container when the overlay is added to the map.
         overlay.onAdd = function() {
           //remove all previous layers.
-          myNode = this.getPanes().overlayLayer;
+          //myNode = this.getPanes().overlayLayer;
+          myNode = this.getPanes().overlayMouseTarget;
           while (myNode.firstChild) {
               myNode.removeChild(myNode.firstChild);
           }
           //append new layer
-          var layer = d3.select(this.getPanes().overlayLayer).append("div")
+          //var layer = d3.select(this.getPanes().overlayLayer).append("div")
+            var layer = d3.select(this.getPanes().overlayMouseTarget).append("div")
             .attr("class", "outliers");
 
           // Draw each marker as a separate SVG element.
@@ -240,12 +239,13 @@ html, body {
                         d = projection.fromLatLngToDivPixel(d);
                         return d3.select(this)
                           .style("left", (d.x - padding) + "px")
-                          .style("top", (d.y - padding) + "px");
+                          .style("top", (d.y - padding) + "px")
+                          .attr("seqnumber", 12);
                       }
                   )
-                  .on("click", function() {
-                      console.log("Selected node");
-                      alert("re");
+                  .on("click", function(d, i) {
+                      console.log("Selected node: " + d3.select(this).attr("top")+ "  " + i );
+                      //d3.select(this).attr("r", 12);
                    })
                   .attr("class", "marker");
 
@@ -261,10 +261,6 @@ html, body {
                   .attr("x", padding + 7)
                   .attr("y", padding)
                   .attr("dy", ".31em")
-                  .on("click", function() {
-                      console.log("Selected node");                                                                                                                                                                                                     
-                      alert("re");
-                   })
                   .text(function(d) { return d.value['row'] });
 
           };
@@ -298,7 +294,7 @@ html, body {
         }      
      });
   }          
-  var outliersfile = "output_1_jan.csv";
+  var outliersfile = "output_7_jan.csv";
   function loadPts(){
       
       var lstbox = document.getElementById("lstbox_lines");
@@ -307,9 +303,10 @@ html, body {
           if(lstbox.options[i].selected){
               selectedLines.push((lstbox.options[i].value));
           }
-      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
-      loadPtsRaw(selectedLines);
+      }     
       loadPtsOutliers(selectedLines);
+      loadPtsRaw(selectedLines);
+      //loadPtsOutliers(selectedLines);
   }
   var maxPts = 500;
   var overlay;   

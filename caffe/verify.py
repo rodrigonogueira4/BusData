@@ -11,10 +11,11 @@ import os
 DEBUG =0
 stride = 10
 time_size = 20
-min_acc = 0.1
+min_acc = 0.1 #min accuracy to be considered outlier
 in_dir = '/work/rfn216/bus_rio/raw_9/'
-day = 31 #it can be day = None
-month = 12 #it can be month = None
+outputfile = 'output_7_jan.csv'
+day = 07 #it can be day = None
+month = 01 #it can be month = None
 
 #load line definitions
 lines_dic = {}
@@ -25,14 +26,14 @@ for i,el in enumerate(list(csv.reader(open('/home/rfn216/BusRio/lines_def.txt', 
 
 lat_m, long_m = -22.9083, -43.1964#center of RJ coords
 day_m = 3600.*12.#mid_day in seconds
-net = caffe.Classifier('/home/rfn216/BusRio/deploy7.prototxt', '/work/rfn216/busrio7_iter_2000000.caffemodel')
+net = caffe.Classifier('/home/rfn216/BusRio/deploy7.prototxt', '/work/rfn216/bus_rio/busrio7_iter_2000000.caffemodel')
 net.set_phase_test()
 net.set_mode_cpu()
 y_pred =[]
 out_data = []
 dic_data={}
 
-out = csv.writer(open('output.csv', 'wb'))
+out = csv.writer(open(outputfile, 'wb'))
 files = [os.path.join(dp, f) for dp, _, filenames in os.walk(in_dir) for f in filenames]
 
 for in_file in files:
