@@ -90,7 +90,7 @@ html, body {
     
     // Load the raw data. When the data comes back, create an overlay.
     function loadPtsRaw(selectedLines){
-        d3.text("http://localhost:8000/data_separated_by_line_and_day/"+selectedLines[0]+"/4-1-2014", function(text) {
+        d3.text("http://localhost:8000/data_separated_by_line_and_day/"+selectedLines[0]+"/7-1-2014", function(text) {
         var data = d3.csv.parseRows(text);
         
         //d3.csv("http://localhost:8000/IBM0015.csv", function(data) {
