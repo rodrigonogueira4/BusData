@@ -62,8 +62,8 @@ html, body {
   <td>Time Range</td>
 </tr>
 <tr>
-  <td><input id="inputStartTime" type="range"  min="0" max="1439" onchange="loadPts()"/></td>
-  <td><input id="inputTimeRange" type="range"  min="0" max="1439" onchange="loadPts()"/></td>
+  <td><input id="inputStartTime" type="range"  min="0" max="1439" value = "0" onchange="loadPts()"/></td>
+  <td><input id="inputTimeRange" type="range"  min="0" max="1439" value = "1439" onchange="loadPts()"/></td>
 </tr>
 <tr>
   <td id="valueStartTime"></td>
@@ -95,7 +95,9 @@ html, body {
     
     // Load the raw data. When the data comes back, create an overlay.
     function loadPtsRaw(selectedLines){
-        d3.text("http://localhost:8000/data_separated_by_line_and_day/"+selectedLines[0]+"/7-1-2014", function(text) {
+        for(i=0;i<selectedLines.length;i++){
+        
+        d3.text("http://localhost:8000/data_separated_by_line_and_day/"+selectedLines[i]+"/7-1-2014", function(text) {
         var data = d3.csv.parseRows(text);
         
         //d3.csv("http://localhost:8000/IBM0015.csv", function(data) {
@@ -123,7 +125,6 @@ html, body {
         });
             
         //filter by start date
-        
         data = data.filter(function(row,index) {
             var ts = new Date(row[11].substring(0, 19).replace(" ", "T")+ "+0000");
             
@@ -193,6 +194,8 @@ html, body {
         // Bind our overlay to the map…
         overlay.setMap(map);
       });
+        
+    }
   }
     
   function loadPtsOutliers(selectedLines){
@@ -205,9 +208,15 @@ html, body {
                 if (row['Linha'] == selectedLines[i]){
                     contains = true;
                 }
+                if (selectedLines[i] =="All"){
+                    contains = true;
+                }
             }
             return contains;
         });
+          
+         
+        
         var data2 = [];
         var lines_outliers = {};  
         k=0;
@@ -222,16 +231,29 @@ html, body {
                 var timestamp = parseDate(data[row]['TimeStamp_'+i]);
                 data2[k] = {
                       TimeStampPercentage: (timestamp - minreftime) / (maxreftime-minreftime), 
-                      //TimeStamp:data[row]['TimeStamp_'+i],
+                      TimeStampStart:data[row]['TimeStamp_19'].substring(0, 19),
+                      TimeStampEnd:data[row]['TimeStamp_0'].substring(0, 19),
                       LatitudePonto:data[row]['LatitudePonto_'+i],
                       LongitudePonto:data[row]['LongitudePonto_'+i],
-                      row:row
+                      row:row,
+                      Line:data[row]["Linha"]
                     };
                 k=k+1;
             } 
         }
        
-
+        //do sampling
+        var samplingRate = Math.floor(data2.length/maxPts);
+        if (samplingRate<1){
+            samplingRate = 1;
+        }
+        data2 = data2.filter(function(row,index) { 
+            if (index%samplingRate != 0){
+                return false;
+            }
+            return true;
+        }); 
+          
         overlay = new google.maps.OverlayView();
         // Add the container when the overlay is added to the map.
         overlay.onAdd = function() {
@@ -276,29 +298,32 @@ html, body {
                         return d3.select(this)
                           .style("left", (d.x - padding) + "px")
                           .style("top", (d.y - padding) + "px")
-                          .attr("seqnumber", "12");
                       }
                   )
-                  .on("click", function(d, i) {
-                      console.log("Selected node: " + d3.select(this)+ "  " + i );
-                      //d3.select(this).attr("r", 12);
-                      tooltip.style("visibility", "visible");
-                      //console.log("Selected node");
-                   })
+                  
                   .attr("class", "marker");
            
                 // Add a circle.
                 marker.append("svg:circle")
                   .attr("r", function(d) { return (3.0 + 5.0 * d.value['TimeStampPercentage']) })
                   .attr("cx", padding)
-                  .attr("cy", padding);
+                  .attr("cy", padding)
+                  .on("click", function(d, i) {
+                      tooltip.style("visibility", "visible");
+                      alert("Selected node:\n" + "Start: " + d.value['TimeStampStart'] + "\nEnd:   " + d.value['TimeStampEnd'] + "\nLine: " + d.value['Line']);
+                   });
 
                 //Add a label.
                 marker.append("svg:text")
                   .attr("x", padding + 7)
                   .attr("y", padding)
                   .attr("dy", ".31em")
-                  .text(function(d) { return d.value['row'] });
+                  .text(function(d) { 
+                    if (selectedLines[0] =="All"){
+                        return d.value['Line'];
+                    }else                 
+                        return d.value['row'];
+                    });
 
           };
         };
@@ -312,14 +337,16 @@ html, body {
       d3.csv(outliersfile, function(data) {
 
         var data2 = [];
-        var lines_outliers = {};  
+        var lines_outliers = {};
+        i = 0;
         for (row in data){
             if (!(data[row]['Linha'] in lines_outliers)){
                 lines_outliers[data[row]['Linha']] = 0;
             }
             lines_outliers[data[row]['Linha']] = lines_outliers[data[row]['Linha']] + 1; //increment the count for outliers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+            i++;
         }
-          
+        lines_outliers["All"] = i;
         for (line in lines_outliers){
             //add the lines and # of outliersto to the listbox
             var lstbox = document.getElementById("lstbox_lines");
