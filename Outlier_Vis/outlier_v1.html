@@ -59,11 +59,11 @@ html, body {
 <table>
 <tr>
   <td>Start Time</td>
-  <td>Time Range</td>
+  <td>Time Window</td>
 </tr>
 <tr>
-  <td><input id="inputStartTime" type="range"  min="0" max="1439" value = "0" onchange="loadPts()"/></td>
-  <td><input id="inputTimeRange" type="range"  min="0" max="1439" value = "1439" onchange="loadPts()"/></td>
+  <td><input id="inputStartTime" type="range"  min="0" max="1439" value = "0" oninput="loadPts()"/></td>
+  <td><input id="inputTimeRange" type="range"  min="0" max="1439" value = "1439" oninput="loadPts()"/></td>
 </tr>
 <tr>
   <td id="valueStartTime"></td>
@@ -222,8 +222,6 @@ html, body {
         k=0;
         //pts must be structured as rows only
         for (row in data){
-            console.log("id"+row+": "+data[row]['TimeStamp_19']);
-            console.log("id"+row+": "+data[row]['TimeStamp_0']);
             var minreftime = parseDate(data[row]['TimeStamp_19']); 
             var maxreftime = parseDate(data[row]['TimeStamp_0']); 
 
@@ -233,6 +231,7 @@ html, body {
                       TimeStampPercentage: (timestamp - minreftime) / (maxreftime-minreftime), 
                       TimeStampStart:data[row]['TimeStamp_19'].substring(0, 19),
                       TimeStampEnd:data[row]['TimeStamp_0'].substring(0, 19),
+                      TimeStamp:data[row]['TimeStamp_'+i],
                       LatitudePonto:data[row]['LatitudePonto_'+i],
                       LongitudePonto:data[row]['LongitudePonto_'+i],
                       row:row,
@@ -253,6 +252,29 @@ html, body {
             }
             return true;
         }); 
+        
+        //filter by start date
+        data2 = data2.filter(function(row,index) {
+          
+            var ts = new Date(row["TimeStamp"].substring(0, 19).replace(" ", "T")+ "+0000");
+            if(startHour > +ts.getUTCHours()){
+                return false;
+            }else if (startHour == +ts.getUTCHours()){
+               if (startMinute > +ts.getUTCMinutes()){
+                   return false;
+               }
+            }
+            
+            if(startHour + rangeHour < +ts.getUTCHours()){
+                return false;
+            }else if (startHour + rangeHour == +ts.getUTCHours()){
+               if (startMinute +rangeMinute < +ts.getUTCMinutes()){
+                   return false;
+               }
+            }
+            return true;
+        }); 
+        
           
         overlay = new google.maps.OverlayView();
         // Add the container when the overlay is added to the map.
