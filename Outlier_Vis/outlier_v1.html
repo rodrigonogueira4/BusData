@@ -240,7 +240,6 @@ html, body {
                 k=k+1;
             } 
         }
-       
         //do sampling
         var samplingRate = Math.floor(data2.length/maxPts);
         if (samplingRate<1){
@@ -275,6 +274,31 @@ html, body {
             return true;
         }); 
         
+        //calculate mean
+        var meanLong = 0;
+        var meanLat = 0;
+        for (i in data2){
+            meanLat = meanLat + +data2[i]["LatitudePonto"];
+            meanLong = meanLong + +data2[i]["LongitudePonto"];
+        }
+        meanLat = meanLat/data2.length;
+        meanLong = meanLong/data2.length;
+        var maxvar = 0;
+        //calculate variance
+         for (i in data2){
+            if (Math.abs(meanLat - +data2[i]["LatitudePonto"]) > maxvar){
+                maxvar = Math.abs(meanLat - +data2[i]["LatitudePonto"]);
+            }
+             
+            if (Math.abs(meanLong - +data2[i]["LongitudePonto"]) > maxvar){
+                maxvar = Math.abs(meanLong - +data2[i]["LongitudePonto"]);
+            }
+        }  
+          console.log(maxvar);
+        //set map center based on outliers mean and variance
+
+        map.setCenter(new google.maps.LatLng(meanLat, meanLong));
+        map.setZoom(Math.floor(13 - maxvar));
           
         overlay = new google.maps.OverlayView();
         // Add the container when the overlay is added to the map.
@@ -327,7 +351,8 @@ html, body {
            
                 // Add a circle.
                 marker.append("svg:circle")
-                  .attr("r", function(d) { return (3.0 + 5.0 * d.value['TimeStampPercentage']) })
+                  //.attr("r", function(d) { return (3.0 + 5.0 * d.value['TimeStampPercentage']) })
+                  .attr("r", 5.0)
                   .attr("cx", padding)
                   .attr("cy", padding)
                   .on("click", function(d, i) {
@@ -409,7 +434,7 @@ html, body {
       loadPtsRaw(selectedLines);
       
   }
-  var maxPts = 500;
+  var maxPts = 1000;
   var overlay;   
   loadLstboxFromOutliers();
  
