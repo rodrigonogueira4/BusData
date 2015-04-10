@@ -83,8 +83,8 @@ html, body {
   <td id="valueStartTime"></td>
   <td id="valueTimeRange"></td>
 </tr>
-<table>
-<div style="width: 100%; height: 100%; overflow: hidden;">
+</table>
+<div style="width: 100%; height: 800px; overflow: hidden;">
     <div style="width: 100px; float: left;"> Lines<br>
         <select id = "lstbox_lines"
             onChange="loadPts()"
@@ -93,8 +93,6 @@ html, body {
           </select> </div>
     <div style="margin-left: 160px;"> <div id="map"></div> </div>
 </div>    
-
-<div id="map"></div>
     
 <div class="container">
 
@@ -116,7 +114,7 @@ html, body {
                 left: 50
             },
       xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([-0.15,1.5]),
-      yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.05,0.1]),
+      yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.05,0.4]),
           
       xAxis = d3.svg.axis()
        .scale(xScale),
@@ -144,38 +142,30 @@ html, body {
         })
         .interpolate("basis");
     
-    //vis.append('svg:path')
-    //  .attr('d', lineGen(data))
-    //  .attr('stroke', 'green')
-    //  .attr('stroke-width', 2)
-    //  .attr('fill', 'none');
      
     var lineGenOutlier = d3.svg.line()
         .x(function(d) {
             var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
             var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
             var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
-            console.log("OUTLIER ts - startTime"+(ts - startTime)/(endTime-startTime));
             return xScale((ts - startTime)/(endTime-startTime));
         })
         .y(function(d) {
             return yScale(Math.abs(+d.LatitudePonto - selectedOutlier.LatitudePonto ) + Math.abs(+d.LongitudePonto - selectedOutlier.LongitudePonto ));
-        });
-        //.interpolate("basis");
+        })
+        .interpolate("basis");
     
     var lineGenRawPts = d3.svg.line()
         .x(function(d) {
             var ts = new Date(d[11].substring(0, 19).replace(" ", "T")+ "+0000");
             var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
             var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
-            console.log("RAW ts - startTime"+(ts - startTime)/(endTime-startTime));
             return xScale((ts - startTime)/(endTime-startTime));
         })
         .y(function(d) {
-          
             return yScale(Math.abs(+d[9] - selectedOutlier.LatitudePonto) + Math.abs(+d[10] - selectedOutlier.LongitudePonto ));
-        });
-        //.interpolate("basis");
+        })
+        .interpolate("basis");
     
     function parseDate(datestr){
         return Date.parse(datestr.substring(0, 19).replace(" ", "T"));
@@ -232,7 +222,7 @@ html, body {
         //select buses for temporal chart comparison. Select buses that are close to the start point of the outlier
         selectedBuses = {}
         for (idx in data){
-            var dist = Math.pow(+data[idx][9]-selectedOutlier.LatitudePonto,2) + Math.pow(+data[idx][10]- selectedOutlier.LongitudePonto,2);
+            var dist = Math.pow( Math.pow(+data[idx][9]-selectedOutlier.LatitudePonto,2) + Math.pow(+data[idx][10]- selectedOutlier.LongitudePonto,2), 0.5);
             if (dist < MAX_DIST){
                 selectedBuses[data[idx][3]] = 1; //dic[<busid] = timestamp
             }
@@ -265,19 +255,16 @@ html, body {
             if (!(data[idx][3] in data2)){
                 data2[data[idx][3]] = []
             }
-            console.log("data2[data[idx][3]]"+data2[data[idx][3]]);
             data2[data[idx][3]].push(data[idx]);
         }
             
         //add to the temporal chart
-        console.log("dic " + Object.keys(selectedBuses).length);
-        console.log("data2 "+Object.keys(data2).length);
         for (var key in data2) {
-            console.log(data2[key]);
-            vis.append('svg:path')
+           vis.append('svg:path')
               .attr('d', lineGenRawPts(data2[key]))
               .attr('stroke', 'blue')
-              .attr('stroke-width', 2)
+              .attr('stroke-width', 1)
+              .attr("class", "line")
               .attr('fill', 'none');
         }    
         var overlay = new google.maps.OverlayView();
@@ -334,7 +321,7 @@ html, body {
   function loadPtsOutliers(selectedLines){
       // Load the outlier data. When the data comes back, create an overlay.
       d3.csv(outliersfile, function(data) {
-        
+        //filter by selected lines
         data = data.filter(function(row,index) {
             var contains = false;
             for (i in selectedLines ){
@@ -356,7 +343,8 @@ html, body {
         for (row in data){
             var minreftime = parseDate(data[row]['TimeStamp_19']); 
             var maxreftime = parseDate(data[row]['TimeStamp_0']); 
-
+            console.log("startTime " + data[row]['TimeStamp_19']);
+            console.log("endTime " + data[row]['TimeStamp_0']);
             for (i =0; i<20; i++){
                 var timestamp = parseDate(data[row]['TimeStamp_'+i]);
                 data2[k] = {
@@ -408,7 +396,7 @@ html, body {
             return true;
         }); 
         
-        
+        //set map center and zoom based on mean and variance of the pts
         if (selectedLines[0] =="All"){
             map.setCenter(new google.maps.LatLng(RIO_CENTER_LAT , RIO_CENTER_LONG));
             map.setZoom(Math.floor(11));
@@ -444,7 +432,8 @@ html, body {
         vis.append('svg:path')
           .attr('d', lineGenOutlier(data2))
           .attr('stroke', 'red')
-          .attr('stroke-width', 2)
+          .attr('stroke-width', 3)
+          .attr("class", "line")
           .attr('fill', 'none');
           
           
@@ -466,13 +455,6 @@ html, body {
             var projection = this.getProjection(),
               padding = 10;
                 
-                var tooltip = d3.select("body")
-                    .append("div")
-                    .style("position", "absolute")
-                    .style("z-index", "10")
-                    .style("visibility", "hidden")
-                    .text("a simple tooltip");
-        
                 var marker = layer.selectAll("svg")
                   .data(d3.entries(data2))
                   .each(
@@ -574,11 +556,12 @@ html, body {
   var rangeHour;
   var rangeMinute;
   var selectedOutlier;
-  var MAX_DIST = 0.01; //maximum distance to 2 pts be considered close.
+  var MAX_DIST = (0.001); //maximum distance to 2 pts be considered close. 1 degree latitude = 100km. 1 meter = 0.00001 degrees. 100 meters = 0.001
   var RIO_CENTER_LAT = -22.911773;
   var RIO_CENTER_LONG = -43.230199;
   function loadPts(){
       
+      //populate listbox with lines
       var lstbox = document.getElementById("lstbox_lines");
       var selectedLines = [];
       for(var i=0;i<lstbox.options.length;i++){
@@ -586,6 +569,8 @@ html, body {
               selectedLines.push((lstbox.options[i].value));
           }
       }
+      //remove all existing lines in the temporal chart
+      vis.selectAll("path.line").remove();
       
       var startTime = document.getElementById("inputStartTime").value;
       startHour = Math.floor(startTime/60);
