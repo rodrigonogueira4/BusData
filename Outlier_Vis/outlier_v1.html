@@ -54,6 +54,20 @@ html, body {
 
 
 </style>
+      
+   <style type="text/css">
+    .axis path {
+        fill: none;
+        stroke: #777;
+        shape-rendering: crispEdges;
+    }
+    .axis text {
+        font-family: Lato;
+        font-size: 13px;
+    }
+
+</style>
+      
 </head>
 <body>
 <table>
@@ -80,8 +94,88 @@ html, body {
     <div style="margin-left: 160px;"> <div id="map"></div> </div>
 </div>    
 
-    <div id="map"></div>
+<div id="map"></div>
+    
+<div class="container">
+
+<div class="jumbotron">
+    <svg id="visualisation" width="1000" height="500"></svg>
+</div>
+
+</div>
+    
 <script type="text/javascript">
+    
+      var vis = d3.select("#visualisation"),
+            WIDTH = 1000,
+            HEIGHT = 500,
+            MARGINS = {
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: 50
+            },
+      xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([-0.15,1.5]),
+      yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.05,0.1]),
+          
+      xAxis = d3.svg.axis()
+       .scale(xScale),
+  
+      yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient("left");
+    
+      vis.append("svg:g")
+       .attr("class","axis")
+       .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+       .call(xAxis);
+  
+      vis.append("svg:g")
+        .attr("class","axis")
+        .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+        .call(yAxis);
+    
+      var lineGen = d3.svg.line()
+        .x(function(d) {
+            return xScale(d.year);
+        })
+        .y(function(d) {
+            return yScale(d.sale);
+        })
+        .interpolate("basis");
+    
+    //vis.append('svg:path')
+    //  .attr('d', lineGen(data))
+    //  .attr('stroke', 'green')
+    //  .attr('stroke-width', 2)
+    //  .attr('fill', 'none');
+     
+    var lineGenOutlier = d3.svg.line()
+        .x(function(d) {
+            var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
+            var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+            var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+            console.log("OUTLIER ts - startTime"+(ts - startTime)/(endTime-startTime));
+            return xScale((ts - startTime)/(endTime-startTime));
+        })
+        .y(function(d) {
+            return yScale(Math.abs(+d.LatitudePonto - selectedOutlier.LatitudePonto ) + Math.abs(+d.LongitudePonto - selectedOutlier.LongitudePonto ));
+        });
+        //.interpolate("basis");
+    
+    var lineGenRawPts = d3.svg.line()
+        .x(function(d) {
+            var ts = new Date(d[11].substring(0, 19).replace(" ", "T")+ "+0000");
+            var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+            var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+            console.log("RAW ts - startTime"+(ts - startTime)/(endTime-startTime));
+            return xScale((ts - startTime)/(endTime-startTime));
+        })
+        .y(function(d) {
+          
+            return yScale(Math.abs(+d[9] - selectedOutlier.LatitudePonto) + Math.abs(+d[10] - selectedOutlier.LongitudePonto ));
+        });
+        //.interpolate("basis");
     
     function parseDate(datestr){
         return Date.parse(datestr.substring(0, 19).replace(" ", "T"));
@@ -89,7 +183,7 @@ html, body {
 	// Create the Google Map…
 	var map = new google.maps.Map(d3.select("#map").node(), {
 	  zoom: 9,
-	  center: new google.maps.LatLng(-22.911773, -43.230199),
+	  center: new google.maps.LatLng(RIO_CENTER_LAT, RIO_CENTER_LONG ),
 	  //mapTypeId: google.maps.MapTypeId.TERRAIN
 	});
     
@@ -99,18 +193,6 @@ html, body {
         
         d3.text("http://localhost:8000/data_separated_by_line_and_day/"+selectedLines[i]+"/7-1-2014", function(text) {
         var data = d3.csv.parseRows(text);
-        
-        //d3.csv("http://localhost:8000/IBM0015.csv", function(data) {
-        //d3.csv("http://localhost:8000/data_separated_by_line_and_day/"+selectedLines[0]+"/4-1-2014", function(data) {
-        /*data = data.filter(function(row,index) {
-            var contains = false;
-            for (i in selectedLines ){
-                if (row['Linha'] == selectedLines[i]){
-                    contains = true;
-                }
-            }
-            return contains;
-        });*/
         
         //do sampling
         var samplingRate = Math.floor(data.length/maxPts);
@@ -146,7 +228,58 @@ html, body {
             
             return true;
         });   
-         
+        
+        //select buses for temporal chart comparison. Select buses that are close to the start point of the outlier
+        selectedBuses = {}
+        for (idx in data){
+            var dist = Math.pow(+data[idx][9]-selectedOutlier.LatitudePonto,2) + Math.pow(+data[idx][10]- selectedOutlier.LongitudePonto,2);
+            if (dist < MAX_DIST){
+                selectedBuses[data[idx][3]] = 1; //dic[<busid] = timestamp
+            }
+        }
+        //filter by start date and end date of the outlier
+        data2 = {}; 
+        var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+        var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+        for (idx in data){
+            if (!(data[idx][3] in selectedBuses)){
+                continue;
+            }
+            var ts = new Date(data[idx][11].substring(0, 19).replace(" ", "T")+ "+0000");
+          
+            if(+startTime.getUTCHours() > +ts.getUTCHours()){
+                continue;
+            }else if (+startTime.getUTCHours() == +ts.getUTCHours()){
+               if (+startTime.getUTCMinutes() > +ts.getUTCMinutes()){
+                   continue;
+               }
+            }
+            
+            if(+endTime.getUTCHours() < +ts.getUTCHours()){
+                continue;
+            }else if (+endTime.getUTCHours() == +ts.getUTCHours()){
+               if (+endTime.getUTCMinutes() < +ts.getUTCMinutes()){
+                   continue;
+               }
+            }
+            if (!(data[idx][3] in data2)){
+                data2[data[idx][3]] = []
+            }
+            console.log("data2[data[idx][3]]"+data2[data[idx][3]]);
+            data2[data[idx][3]].push(data[idx]);
+        }
+            
+        //add to the temporal chart
+        console.log("dic " + Object.keys(selectedBuses).length);
+        console.log("data2 "+Object.keys(data2).length);
+        for (var key in data2) {
+            console.log(data2[key]);
+            vis.append('svg:path')
+              .attr('d', lineGenRawPts(data2[key]))
+              .attr('stroke', 'blue')
+              .attr('stroke-width', 2)
+              .attr('fill', 'none');
+        }    
         var overlay = new google.maps.OverlayView();
         // Add the container when the overlay is added to the map.
         overlay.onAdd = function() {
@@ -214,8 +347,7 @@ html, body {
             }
             return contains;
         });
-          
-         
+
         
         var data2 = [];
         var lines_outliers = {};  
@@ -228,13 +360,15 @@ html, body {
             for (i =0; i<20; i++){
                 var timestamp = parseDate(data[row]['TimeStamp_'+i]);
                 data2[k] = {
-                      TimeStampPercentage: (timestamp - minreftime) / (maxreftime-minreftime), 
+                      TimeStampPercentage: (timestamp - minreftime) / (maxreftime-minreftime),
+                      TimeStampRef: (timestamp - minreftime),
                       TimeStampStart:data[row]['TimeStamp_19'].substring(0, 19),
                       TimeStampEnd:data[row]['TimeStamp_0'].substring(0, 19),
                       TimeStamp:data[row]['TimeStamp_'+i],
                       LatitudePonto:data[row]['LatitudePonto_'+i],
                       LongitudePonto:data[row]['LongitudePonto_'+i],
                       row:row,
+                      BusId:data[row]["Onibus"],
                       Line:data[row]["Linha"]
                     };
                 k=k+1;
@@ -274,31 +408,45 @@ html, body {
             return true;
         }); 
         
-        //calculate mean
-        var meanLong = 0;
-        var meanLat = 0;
-        for (i in data2){
-            meanLat = meanLat + +data2[i]["LatitudePonto"];
-            meanLong = meanLong + +data2[i]["LongitudePonto"];
-        }
-        meanLat = meanLat/data2.length;
-        meanLong = meanLong/data2.length;
-        var maxvar = 0;
-        //calculate variance
-         for (i in data2){
-            if (Math.abs(meanLat - +data2[i]["LatitudePonto"]) > maxvar){
-                maxvar = Math.abs(meanLat - +data2[i]["LatitudePonto"]);
+        
+        if (selectedLines[0] =="All"){
+            map.setCenter(new google.maps.LatLng(RIO_CENTER_LAT , RIO_CENTER_LONG));
+            map.setZoom(Math.floor(11));
+        }else{
+            //calculate mean
+            var meanLong = 0;
+            var meanLat = 0;
+            for (i in data2){
+                meanLat = meanLat + +data2[i]["LatitudePonto"];
+                meanLong = meanLong + +data2[i]["LongitudePonto"];
             }
-             
-            if (Math.abs(meanLong - +data2[i]["LongitudePonto"]) > maxvar){
-                maxvar = Math.abs(meanLong - +data2[i]["LongitudePonto"]);
-            }
-        }  
-          console.log(maxvar);
-        //set map center based on outliers mean and variance
+            meanLat = meanLat/data2.length;
+            meanLong = meanLong/data2.length;
+            var maxvar = 0;
+            //calculate variance
+             for (i in data2){
+                if (Math.abs(meanLat - +data2[i]["LatitudePonto"]) > maxvar){
+                    maxvar = Math.abs(meanLat - +data2[i]["LatitudePonto"]);
+                }
 
-        map.setCenter(new google.maps.LatLng(meanLat, meanLong));
-        map.setZoom(Math.floor(13 - maxvar));
+                if (Math.abs(meanLong - +data2[i]["LongitudePonto"]) > maxvar){
+                    maxvar = Math.abs(meanLong - +data2[i]["LongitudePonto"]);
+                }
+            }  
+            //set map center based on outliers mean and variance
+            map.setCenter(new google.maps.LatLng(meanLat, meanLong));
+            map.setZoom(Math.floor(13 - maxvar));
+        }
+        
+        
+        selectedOutlier = data2[0]; //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
+        //add to the temporal chart
+        vis.append('svg:path')
+          .attr('d', lineGenOutlier(data2))
+          .attr('stroke', 'red')
+          .attr('stroke-width', 2)
+          .attr('fill', 'none');
+          
           
         overlay = new google.maps.OverlayView();
         // Add the container when the overlay is added to the map.
@@ -357,7 +505,11 @@ html, body {
                   .attr("cy", padding)
                   .on("click", function(d, i) {
                       tooltip.style("visibility", "visible");
-                      alert("Selected node:\n" + "Start: " + d.value['TimeStampStart'] + "\nEnd:   " + d.value['TimeStampEnd'] + "\nLine: " + d.value['Line']);
+                      alert("Selected node:\n" +
+                            "Start: " + d.value['TimeStampStart'] + "\n"+
+                            "End:   " + d.value['TimeStampEnd'] + "\n"+
+                            "Line: " + d.value['Line'] + "\n"+
+                            "Bus Id: " + d.value['BusId']);
                    });
 
                 //Add a label.
@@ -369,7 +521,8 @@ html, body {
                     if (selectedLines[0] =="All"){
                         return d.value['Line'];
                     }else                 
-                        return d.value['row'];
+                        //return d.value['BusId'];
+                        return ""
                     });
 
           };
@@ -385,24 +538,34 @@ html, body {
 
         var data2 = [];
         var lines_outliers = {};
-        i = 0;
+        var lines_outliers_total = {};
         for (row in data){
             if (!(data[row]['Linha'] in lines_outliers)){
-                lines_outliers[data[row]['Linha']] = 0;
+                lines_outliers[data[row]['Linha']] = {};
             }
-            lines_outliers[data[row]['Linha']] = lines_outliers[data[row]['Linha']] + 1; //increment the count for outliers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-            i++;
+            //lines_outliers[data[row]['Linha']] = lines_outliers[data[row]['Linha']] + 1; //increment the count for outliers
+            lines_outliers[data[row]['Linha']][data[row]['Onibus']] = 1; //add bus
+            lines_outliers_total[data[row]['Linha'] + "_" + data[row]['Onibus']] = 1;
         }
-        lines_outliers["All"] = i;
+        //add "All"
+        var lstbox = document.getElementById("lstbox_lines");
+        var opt; 
+        opt = document.createElement("Option"); 
+        opt.text = "All     ("+ Object.keys(lines_outliers_total).length + " outliers)"; //Textbox's value
+        opt.value =  "All"; //Textbox's value
+        lstbox.add(opt);  
+        
         for (line in lines_outliers){
             //add the lines and # of outliersto to the listbox
             var lstbox = document.getElementById("lstbox_lines");
             var opt; 
             opt = document.createElement("Option"); 
-            opt.text = line +"     ("+ lines_outliers[line] + " outliers)"; //Textbox's value
+            opt.text = line +"     ("+ Object.keys(lines_outliers[line]).length + " outliers)"; //Textbox's value
             opt.value = line; //Textbox's value
             lstbox.add(opt);
-        }      
+        }
+        
+        
      });
   }          
   var outliersfile = "output_7_jan.csv";
@@ -410,6 +573,10 @@ html, body {
   var startMinute;
   var rangeHour;
   var rangeMinute;
+  var selectedOutlier;
+  var MAX_DIST = 0.01; //maximum distance to 2 pts be considered close.
+  var RIO_CENTER_LAT = -22.911773;
+  var RIO_CENTER_LONG = -43.230199;
   function loadPts(){
       
       var lstbox = document.getElementById("lstbox_lines");
