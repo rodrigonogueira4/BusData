@@ -605,7 +605,7 @@
 				var lines_outliers_total = {};
 				for (row in data){
 					if (!(data[row]['Linha'] in lines_outliers)) {
-						lines_outliers[data[row]['Linha']] = 0;
+						lines_outliers[data[row]['Linha']] = {};
 					}
 					//lines_outliers[data[row]['Linha']] = lines_outliers[data[row]['Linha']] + 1; //increment the count for outliers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
 					lines_outliers[data[row]['Linha']][data[row]['Onibus']] = 1; //add bus
@@ -624,9 +624,10 @@
 					var lstbox = document.getElementById("lstbox_lines");
 					var opt; 
 					opt = document.createElement("Option"); 
-					opt.text = line +"     ("+ lines_outliers[line] + " outliers)"; //Textbox's value
+					opt.text = line +"     ("+ Object.keys(lines_outliers[line]).length + " outliers)"; //Textbox's value
 					opt.value = line; //Textbox's value
 					lstbox.add(opt);
+					//console.log(Object.keys(lines_outliers[line]).length);
 				}      
 			});
 		}
