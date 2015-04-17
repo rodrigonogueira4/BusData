@@ -65,19 +65,19 @@
 	<body>
 		<table>
 		<tr>
-		  <td>Start Time</td>
-		  <td>Time Window</td>
+		  <td><center>Start Time</center></td>
+		  <td><center>Time Window</center></td>
 		</tr>
 		<tr>
 		  <td><input id="inputStartTime" type="range"  min="0" max="1439" value = "0" onchange="loadPts()"/></td>
 		  <td><input id="inputTimeRange" type="range"  min="0" max="1439" value = "1439" onchange="loadPts()"/></td>
 		</tr>
 		<tr>
-		  <td id="valueStartTime"></td>
-		  <td id="valueTimeRange"></td>
+		  <td><center id="valueStartTime"></center></td>
+		  <td><center id="valueTimeRange"></center></td>
 		</tr>
 		<table>
-		<div style="width: 100%; height: 100%; overflow: hidden;">
+		<div style="width: 100%; height: 800px; overflow: hidden;">
 			<div style="width: 100px; float: left;"> Lines<br>
 				<select id = "lstbox_lines"
 					onChange="loadPts()"
@@ -116,14 +116,7 @@
 		var max_latitude_bounding = null;
 		var min_longitude_bounding = null;
 		var max_longitude_bounding = null;
-
-<<<<<<< HEAD
-.outliers circle {
-  fill: red;
-  stroke: black;
-  stroke-width: 0.2px;
-}
-
+    </script>
 
 </style>
       
@@ -139,47 +132,10 @@
     }
 
 </style>
-      
-</head>
-<body>
-<table>
-<tr>
-  <td>Start Time</td>
-  <td>Time Window</td>
-</tr>
-<tr>
-  <td><input id="inputStartTime" type="range"  min="0" max="1439" value = "0" onchange="loadPts()"/></td>
-  <td><input id="inputTimeRange" type="range"  min="0" max="1439" value = "1439" onchange="loadPts()"/></td>
-</tr>
-<tr>
-  <td id="valueStartTime"></td>
-  <td id="valueTimeRange"></td>
-</tr>
-</table>
-<div style="width: 100%; height: 800px; overflow: hidden;">
-    <div style="width: 100px; float: left;"> Lines<br>
-        <select id = "lstbox_lines"
-            onChange="loadPts()"
-            multiple = "multiple"
-            size = "30">
-          </select> </div>
-    <div style="margin-left: 160px;"> <div id="map"></div> </div>
-</div>    
-    
-<div class="container">
-
-<div class="jumbotron">
-    <svg id="visualisation" width="1000" height="500"></svg>
-</div>
-
-</div>
     
 <script type="text/javascript">
     
-      var vis = d3.select("#visualisation"),
-=======
 		var vis = d3.select("#visualisation"),
->>>>>>> 84cf0aa3b5f8257cda8cf6633dd31a36415ec5bd
             WIDTH = 1000,
             HEIGHT = 500,
             MARGINS = {
@@ -188,7 +144,7 @@
                 bottom: 20,
                 left: 50
             },
-			xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([-0.15,1.5]),
+			xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0,1.0]),
 			yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.05,0.4]),
             xAxis = d3.svg.axis()
 					  .scale(xScale),
@@ -217,8 +173,8 @@
 		var lineGenOutlier = d3.svg.line()
 							   .x(function(d) {
 									var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
-									var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-									var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                                     var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                     var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
 									return xScale((ts - startTime)/(endTime-startTime));
 							   })
 							   .y(function(d) {
@@ -229,8 +185,8 @@
 		var lineGenRawPts = d3.svg.line()
 							  .x(function(d) {
 									var ts = new Date(d[11].substring(0, 19).replace(" ", "T")+ "+0000");
-									var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-									var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                                     var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                     var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
 									return xScale((ts - startTime)/(endTime-startTime));
 							  })
 							  .y(function(d) {
@@ -553,9 +509,12 @@
 				for (row in data) {
 					var minreftime = parseDate(data[row]['TimeStamp_19']); 
 					var maxreftime = parseDate(data[row]['TimeStamp_0']); 
-
+                    console.log("starttime: " + data[row]['TimeStamp_19']);
+                    console.log("endtime: " + data[row]['TimeStamp_0']);
+                    
 					for (i = 0; i<20; i++){
 						var timestamp = parseDate(data[row]['TimeStamp_' + i]);
+                        //console.log("time " + i + ":" + data[row]['TimeStamp_'+i]);
 						outlier_data[k] = {
 							TimeStampPercentage: (timestamp - minreftime) / (maxreftime-minreftime), 
 							TimeStampRef: (timestamp - minreftime),
@@ -615,47 +574,46 @@
 					}
 					return true;
 				});
-				//set map center and zoom based on mean and variance of the pts
-				/*if (selectedLines[0] == "All") {
-					map.setCenter(new google.maps.LatLng(RIO_CENTER_LAT , RIO_CENTER_LONG));
-					map.setZoom(Math.floor(11));
-				}
-				else {
-					//calculate mean
-					var meanLong = 0;
-					var meanLat = 0;
-					for (i in outlier_data) {
-						meanLat = meanLat + +outlier_data[i]["LatitudePonto"];
-						meanLong = meanLong + +outlier_data[i]["LongitudePonto"];
-					}
-					meanLat = meanLat/outlier_data.length;
-					meanLong = meanLong/outlier_data.length;
-					var maxvar = 0;
-					//calculate variance
-					 for (i in outlier_data) {
-						if (Math.abs(meanLat - +outlier_data[i]["LatitudePonto"]) > maxvar) {
-							maxvar = Math.abs(meanLat - +outlier_data[i]["LatitudePonto"]);
-						}
+                
+                selectedOutlier = outlier_data[0]; //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
 
-						if (Math.abs(meanLong - +outlier_data[i]["LongitudePonto"]) > maxvar){
-							maxvar = Math.abs(meanLong - +outlier_data[i]["LongitudePonto"]);
-						}
-					}  
-					//set map center based on outliers mean and variance
-					map.setCenter(new google.maps.LatLng(meanLat, meanLong));
-					map.setZoom(Math.floor(13 - maxvar));
-				}*/
-				
-				
-				selectedOutlier = outlier_data[0]; //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
-				//add to the temporal chart
-				vis.append('svg:path')
-				  .attr('d', lineGenOutlier(outlier_data))
-				  .attr('stroke', 'red')
-				  .attr('stroke-width', 3)
-				  .attr("class", "line")
-				  .attr('fill', 'none');
-			
+                
+                
+                //remove duplicated outliers
+                outlier_data_by_bus = {};
+                outlier_data_by_bus2 = [];
+                for (row in outlier_data) {
+                    if (outlier_data[row]["BusId"] != selectedOutlier["BusId"]){
+                        continue;
+                    }
+                    if (!((outlier_data[row]["BusId"]+outlier_data[row]["TimeStamp"]) in outlier_data_by_bus)){
+                          outlier_data_by_bus[outlier_data[row]["BusId"]+outlier_data[row]["TimeStamp"]] = 1;
+                          outlier_data_by_bus2.push(outlier_data[row]);
+                        
+                          //update start and end dates of the selected outlier
+                          var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                          var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                          var ts= new Date(outlier_data[row]["TimeStamp"].substring(0, 19).replace(" ", "T")+ "+0000");
+                          if (ts < startTime){
+                              selectedOutlier.TimeStampStart = outlier_data[row]["TimeStamp"];
+                          }
+                          if (ts > endTime){
+                              selectedOutlier.TimeStampEnd = outlier_data[row]["TimeStamp"];
+                          }
+
+                    }
+				}
+                
+                console.log(outlier_data_by_bus2);
+
+          		//add to the temporal chart
+                vis.append('svg:path')
+                  .attr('d', lineGenOutlier(outlier_data_by_bus2))
+                  .attr('stroke', 'red')
+                  .attr('stroke-width', 3)
+                  .attr("class", "line")
+                  .attr('fill', 'none');
+
 				overlay_outliers.setMap(map);
 			});
 		}
@@ -693,7 +651,9 @@
 				}      
 			});
 		}
-		
+		function format2digits(n){
+            return n > 9 ? "" + n: "0" + n;
+        }
 		function loadPts() {
 			var lstbox = document.getElementById("lstbox_lines");
 			var selectedLines = [];
@@ -709,12 +669,12 @@
 			var startTime = document.getElementById("inputStartTime").value;
 			startHour = Math.floor(startTime/60);
 			startMinute = (startTime%60)
-			document.getElementById("valueStartTime").innerHTML = startHour + ":" + startMinute;
+			document.getElementById("valueStartTime").innerHTML = format2digits(startHour) + ":" + format2digits(startMinute);
 
 			var timeRange = document.getElementById("inputTimeRange").value;
 			rangeHour = Math.floor(timeRange/60);
 			rangeMinute = (timeRange%60)
-			document.getElementById("valueTimeRange").innerHTML = rangeHour + ":" + rangeMinute;
+			document.getElementById("valueTimeRange").innerHTML = format2digits(rangeHour) + ":" + format2digits(rangeMinute);
 
 			loadPtsOutliers(selectedLines);
 			loadPtsRaw(selectedLines);	  
