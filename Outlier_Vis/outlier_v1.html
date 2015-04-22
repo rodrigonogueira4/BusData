@@ -40,8 +40,8 @@
 		}
 
 		.outliers svg {
-		  width: 800px;
-		  height: 800px;
+		  width: 1000px;
+		  height: 1000px;
 		  padding-right: 100px;
 		  font: 10px sans-serif;
 		}
@@ -141,13 +141,15 @@
             MARGINS = {
                 top: 20,
                 right: 20,
-                bottom: 20,
-                left: 50
+                bottom: 60,
+                left: 80
             },
-			xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0,1.0]),
-			yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.05,0.4]),
+			xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0, 1.0]),
+			//xScale = d3.time.scale().range([MARGINS.left, WIDTH - MARGINS.right]),
+            yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0.0, 0.4]),
             xAxis = d3.svg.axis()
 					  .scale(xScale),
+                      //.tickFormat(d3.time.format("%H:%m")),
 			yAxis = d3.svg.axis()
 					  .scale(yScale)
 					  .orient("left");
@@ -158,24 +160,32 @@
 		   .call(xAxis);
 		vis.append("svg:g")
 		   .attr("class","axis")
-           .attr("transform", "translate(" + (MARGINS.left) + ",0)")
+           .attr("transform", "translate(" + (MARGINS.left) + ",-40)")
            .call(yAxis);
+        
+		//Create X axis label   
+		vis.append("svg:text")
+		.attr("x", WIDTH / 2 )
+        .attr("y",  HEIGHT -10)
+        .style("text-anchor", "middle")
+        .text("Time");
     
-		var lineGen = d3.svg.line()
-						.x(function(d) {
-							return xScale(d.year);
-						})
-						.y(function(d) {
-							return yScale(d.sale);
-						})
-						.interpolate("basis");
-     
+        //Create Y axis label
+        vis.append("svg:text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 10)
+        .attr("x",0 - (HEIGHT / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Distance"); 
+        
 		var lineGenOutlier = d3.svg.line()
 							   .x(function(d) {
-									var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
-                                     var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-                                     var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
-									return xScale((ts - startTime)/(endTime-startTime));
+								   var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   //return xScale(d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"))
+                                   return xScale((ts - startTime)/(endTime-startTime));
 							   })
 							   .y(function(d) {
 									return yScale(Math.abs(+d.LatitudePonto - selectedOutlier.LatitudePonto ) + Math.abs(+d.LongitudePonto - selectedOutlier.LongitudePonto ));
@@ -185,15 +195,19 @@
 		var lineGenRawPts = d3.svg.line()
 							  .x(function(d) {
 									var ts = new Date(d[11].substring(0, 19).replace(" ", "T")+ "+0000");
-                                     var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-                                     var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
-									return xScale((ts - startTime)/(endTime-startTime));
+                                    var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                    var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+									//return xScale(d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"))
+                                    return xScale((ts - startTime)/(endTime-startTime));
 							  })
 							  .y(function(d) {
 									return yScale(Math.abs(+d[9] - selectedOutlier.LatitudePonto) + Math.abs(+d[10] - selectedOutlier.LongitudePonto ));
 							  })
 							  .interpolate("basis");
-	
+	    //MOD THIS
+        //xScale.domain(d3.extent(data, function(d) { return d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"); }));
+        //xScale.domain([d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 09:36:03"),d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 11:36:03")]);
+    
 		function parseDate(datestr) {
 			return Date.parse(datestr.substring(0, 19).replace(" ", "T"));
 		}

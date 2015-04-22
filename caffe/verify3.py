@@ -62,6 +62,14 @@ for in_file in files:
 		    dic_data[key] = []
 		dic_data[key].append(row)
 
+#order by timestamp
+for key in dic_data.keys():
+    ts = []
+    for item in dic_data[key]:
+        ts.append(dateutil.parser.parse(item['TimeStamp']))
+    idx_sorted = np.asarray(ts).argsort()
+    dic_data[key] = dic_data[key][idx_sorted]
+
 #i =0
 header=False
 for key, rows in dic_data.items():
