@@ -146,7 +146,7 @@
             },
 			xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0, 1.0]),
 			//xScale = d3.time.scale().range([MARGINS.left, WIDTH - MARGINS.right]),
-            yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0.0, 0.4]),
+            yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.05, 0.4]),
             xAxis = d3.svg.axis()
 					  .scale(xScale),
                       //.tickFormat(d3.time.format("%H:%m")),
@@ -160,13 +160,13 @@
 		   .call(xAxis);
 		vis.append("svg:g")
 		   .attr("class","axis")
-           .attr("transform", "translate(" + (MARGINS.left) + ",-40)")
+           .attr("transform", "translate(" + (MARGINS.left) + ", " + (0) + ")")
            .call(yAxis);
         
 		//Create X axis label   
 		vis.append("svg:text")
 		.attr("x", WIDTH / 2 )
-        .attr("y",  HEIGHT -10)
+        .attr("y",  HEIGHT )
         .style("text-anchor", "middle")
         .text("Time");
     
