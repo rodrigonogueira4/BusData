@@ -67,11 +67,12 @@
 		<tr>
 		  <td><center>Start Time</center></td>
 		  <td><center>Time Window</center></td>
-            <td><center><input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked> Connected Points<br></center></td>
+            <td><input type="checkbox" id="SetEndPts" value="SetEndPtsValue" >Set End Points<br></td>
 		</tr>
 		<tr>
 		  <td><input id="inputStartTime" type="range"  min="0" max="1439" value = "0" onchange="loadPts()"/></td>
 		  <td><input id="inputTimeRange" type="range"  min="0" max="1439" value = "1439" onchange="loadPts()"/></td>
+          <td><input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br></td>
 		</tr>
 		<tr>
 		  <td><center id="valueStartTime"></center></td>
@@ -113,7 +114,8 @@
 		var raw_data;
 		var raw_data_layer;
 		var raw_data_load_callback_count;
-		
+		var selectedLines;
+        
 		var min_latitude_bounding = null;
 		var max_latitude_bounding = null;
 		var min_longitude_bounding = null;
@@ -184,8 +186,8 @@
 		var lineGenOutlier = d3.svg.line()
 							   .x(function(d) {
 								   var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
-                                   var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-                                   var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var startTime= new Date(d.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var endTime = new Date(d.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
                                    //return xScale(d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"))
                                    return xScale((ts - startTime)/(endTime-startTime));
 							   })
@@ -197,8 +199,8 @@
 		var lineGenRawPts = d3.svg.line()
 							  .x(function(d) {
 									var ts = new Date(d[11].substring(0, 19).replace(" ", "T")+ "+0000");
-                                    var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-                                    var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                                    var startTime= new Date(d.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                    var endTime = new Date(d.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
 									//return xScale(d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"))
                                     return xScale((ts - startTime)/(endTime-startTime));
 							  })
@@ -229,7 +231,7 @@
             center: new google.maps.LatLng(RIO_CENTER_LAT, RIO_CENTER_LONG),
             mapTypeControlOptions: {
                  mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'tehgrayz']
-            }
+            },
         };
 
         map = new google.maps.Map(d3.select("#map").node(), mapOptions);
@@ -279,8 +281,8 @@
 		overlay_raw.onRemove = function() {
 			$(".rawpt").remove();
 		};
-
-		function loadPtsRaw(selectedLines) {
+        
+		function loadPtsRaw() {
 			overlay_raw.setMap(null);
 			raw_data = null;
 			raw_data_load_callback_count = selectedLines.length;
@@ -378,14 +380,14 @@
 					}
 						
 					//add to the temporal chart
-					for (var key in data2) {
+					/*for (var key in data2) {
 						vis.append('svg:path')
 						   .attr('d', lineGenRawPts(data2[key]))
 						   .attr('stroke', 'blue')
 						   .attr('stroke-width', 1)
 						   .attr("class", "line")
 						   .attr('fill', 'none');
-					}
+					}*/
 	
 					raw_data_load_callback();
 					//var overlay_raw = new google.maps.OverlayView();
@@ -497,7 +499,7 @@
 								return "";
 						});*/
             
-            if ($('#ConnectedPts').is(':checked')){
+            if ($('#ConnectedPts').is(':checked') && (selectedLines[0] != "All")){
                 //remove all lines
                 $(".marker2").remove();
                 var marker = outlier_data_layer.selectAll("svg2")
@@ -570,7 +572,7 @@
             
 		};
 
-		function loadPtsOutliers(selectedLines) {
+		function loadPtsOutliers() {
 			overlay_outliers.setMap(null);
 			outlier_data = null;
 			
@@ -597,9 +599,7 @@
 				outlier_data = [];
 				var lines_outliers = {};  
 				k = 0;
-				//pts must be structured as rows only
-				//outlier_data_load_callback_count = selectedLines.length;
-				
+				//pts must be structured as rows
 				for (row in data) {
 					var minreftime = parseDate(data[row]['TimeStamp_19']); 
 					var maxreftime = parseDate(data[row]['TimeStamp_0']); 
@@ -685,37 +685,40 @@
              
                 //remove duplicated outliers
                 outlier_data_by_bus = {};
-                outlier_data_by_bus2 = [];
+                outlier_data_by_bus2 = {};
                 for (row in outlier_data) {
-                    if (outlier_data[row]["BusId"] != selectedOutlier["BusId"]){
-                        continue;
-                    }
+                    //if (outlier_data[row]["BusId"] != selectedOutlier["BusId"]){
+                    //    continue;
+                    //}
                     if (!((outlier_data[row]["BusId"]+outlier_data[row]["TimeStamp"]) in outlier_data_by_bus)){
                           outlier_data_by_bus[outlier_data[row]["BusId"]+outlier_data[row]["TimeStamp"]] = 1;
-                          outlier_data_by_bus2.push(outlier_data[row]);
+                          if (!(outlier_data[row]["BusId"] in outlier_data_by_bus2)){
+                              outlier_data_by_bus2[outlier_data[row]["BusId"]] = [];
+                          }
+                          outlier_data_by_bus2[outlier_data[row]["BusId"]].push(outlier_data[row]);
                         
                           //update start and end dates of the selected outlier
-                          var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-                          var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
-                          var ts= new Date(outlier_data[row]["TimeStamp"].substring(0, 19).replace(" ", "T")+ "+0000");
-                          if (ts < startTime){
-                              selectedOutlier.TimeStampStart = outlier_data[row]["TimeStamp"];
-                          }
-                          if (ts > endTime){
-                              selectedOutlier.TimeStampEnd = outlier_data[row]["TimeStamp"];
-                          }
-
+                          //var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                          //var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                          //var ts= new Date(outlier_data[row]["TimeStamp"].substring(0, 19).replace(" ", "T")+ "+0000");
+                          //if (ts < startTime){
+                          //    selectedOutlier.TimeStampStart = outlier_data[row]["TimeStamp"];
+                          //}
+                          //if (ts > endTime){
+                          //    selectedOutlier.TimeStampEnd = outlier_data[row]["TimeStamp"];
+                          //}
                     }
 				}
                 
           		//add to the temporal chart
-                vis.append('svg:path')
-                  .attr('d', lineGenOutlier(outlier_data_by_bus2))
-                  .attr('stroke', 'red')
-                  .attr('stroke-width', 3)
-                  .attr("class", "line")
-                  .attr('fill', 'none');
-
+                /*for (key in outlier_data_by_bus2){
+                    vis.append('svg:path')
+                      .attr('d', lineGenOutlier(outlier_data_by_bus2[key]))
+                      .attr('stroke', 'red')
+                      .attr('stroke-width', 3)
+                      .attr("class", "line")
+                      .attr('fill', 'none');
+                }*/
 				overlay_outliers.setMap(map);
 			});
 		}
@@ -738,8 +741,9 @@
 				opt = document.createElement("Option"); 
 				opt.text = "All     ("+ Object.keys(lines_outliers_total).length + " outliers)"; //Textbox's value
 				opt.value =  "All"; //Textbox's value
-				lstbox.add(opt);  
-
+				lstbox.add(opt);
+                //lines_outliers = Object.keys(lines_outliers)
+                //lines_outliers = lines_outliers.sort();
 				for (line in lines_outliers){
 					//add the lines and # of outliersto to the listbox
 					var lstbox = document.getElementById("lstbox_lines");
@@ -756,7 +760,7 @@
         }
 		function loadPts() {
 			var lstbox = document.getElementById("lstbox_lines");
-			var selectedLines = [];
+			selectedLines = [];
 			
 			for(var i=0; i<lstbox.options.length; i++){
 				if (lstbox.options[i].selected){
@@ -777,8 +781,8 @@
 			rangeMinute = (timeRange%60)
 			document.getElementById("valueTimeRange").innerHTML = format2digits(rangeHour) + ":" + format2digits(rangeMinute);
 
-			loadPtsOutliers(selectedLines);
-			loadPtsRaw(selectedLines);	  
+			loadPtsOutliers();
+			loadPtsRaw();	  
 		}
 		loadLstboxFromOutliers();
     </script>
