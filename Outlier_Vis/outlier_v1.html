@@ -729,11 +729,11 @@
 				var lines_outliers = {};
 				var lines_outliers_total = {};
 				for (row in data){
-					if (!(data[row]['Linha'] in lines_outliers)) {
+					if (!(+data[row]['Linha'] in lines_outliers)) {
 						lines_outliers[data[row]['Linha']] = {};
 					}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-					lines_outliers[data[row]['Linha']][data[row]['Onibus']] = 1; //add bus
-					lines_outliers_total[data[row]['Linha'] + "_" + data[row]['Onibus']] = 1;
+					lines_outliers[+data[row]['Linha']][data[row]['Onibus']] = 1; //add bus
+					lines_outliers_total[(+data[row]['Linha']) + "_" + data[row]['Onibus']] = 1;
 				}
 				//add "All"
 				var lstbox = document.getElementById("lstbox_lines");
@@ -742,15 +742,17 @@
 				opt.text = "All     ("+ Object.keys(lines_outliers_total).length + " outliers)"; //Textbox's value
 				opt.value =  "All"; //Textbox's value
 				lstbox.add(opt);
-                //lines_outliers = Object.keys(lines_outliers)
-                //lines_outliers = lines_outliers.sort();
-				for (line in lines_outliers){
+                
+                var lines_keys = Object.keys(lines_outliers)
+                lines_keys = lines_keys.sort();
+				for (i in lines_keys){
+                    var key = lines_keys[i];
 					//add the lines and # of outliersto to the listbox
 					var lstbox = document.getElementById("lstbox_lines");
 					var opt; 
 					opt = document.createElement("Option"); 
-					opt.text = line +"     ("+ Object.keys(lines_outliers[line]).length + " outliers)"; //Textbox's value
-					opt.value = line; //Textbox's value
+					opt.text = key +"     ("+ Object.keys(lines_outliers[key]).length + " outliers)"; //Textbox's value
+					opt.value = key; //Textbox's value
 					lstbox.add(opt);
 				}      
 			});
