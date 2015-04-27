@@ -60,6 +60,33 @@
 			font-family: Lato;
 			font-size: 13px;
 		}
+		.barchart rect {
+			fill: steelblue;
+		}
+
+		.barchart text {
+			fill: white;
+			font: 10px sans-serif;
+			text-anchor: end;
+		}
+		
+		.barchartDiv {
+			float: left;
+			overflow-y: scroll;
+			height: 800px;
+			width: 300px;
+		}
+		
+		.axis path {
+			fill: none;
+			stroke: #777;
+			shape-rendering: crispEdges;
+		}
+		.axis text {
+			font-family: Lato;
+			font-size: 13px;
+		}
+
 	</style>
 	</head>
 	<body>
@@ -81,14 +108,17 @@
 		<table>
         
 		<div style="width: 100%; height: 800px; overflow: hidden;">
-			<div style="width: 100px; float: left;"> Lines<br>
+			<div class="barchartDiv">
+				<svg class="barchart"></svg>
+			</div>
+			<!--<div style="width: 100px; float: left;"> Lines<br>
 				<select id = "lstbox_lines"
 					onChange="loadPts()"
 					multiple = "multiple"
 					size = "30">
 				  </select>
-			</div>
-			<div style="margin-left: 160px;"> <div id="map"></div> </div>
+			</div>-->
+			<div style="margin-left: 300px;"> <div id="map"></div> </div>
 		</div>
 		<div class="container">
 			<div class="jumbotron">
@@ -121,23 +151,8 @@
 		var min_longitude_bounding = null;
 		var max_longitude_bounding = null;
     </script>
-
-</style>
-      
-   <style type="text/css">
-    .axis path {
-        fill: none;
-        stroke: #777;
-        shape-rendering: crispEdges;
-    }
-    .axis text {
-        font-family: Lato;
-        font-size: 13px;
-    }
-
-</style>
     
-<script type="text/javascript">
+	<script type="text/javascript">
     
 		var vis = d3.select("#visualisation"),
             WIDTH = 1000,
@@ -329,56 +344,59 @@
 					});   
 	
 					//select buses for temporal chart comparison. Select buses that are close to the start point of the outlier
-					selectedBuses = {}
-					for (idx in raw_data){
-						var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatitudePonto,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongitudePonto, 2), 0.5);
-						if (dist < MAX_DIST){
-							selectedBuses[raw_data[idx][3]] = 1; //dic[<busid] = timestamp
+					if (selectedOutlier != null)
+					{
+						selectedBuses = {}
+						for (idx in raw_data){
+							var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatitudePonto,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongitudePonto, 2), 0.5);
+							if (dist < MAX_DIST){
+								selectedBuses[raw_data[idx][3]] = 1; //dic[<busid] = timestamp
+							}
 						}
-					}
-					//filter by start date and end date of the outlier
-					data2 = {}; 
-					var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T") + "+0000");
-					var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T") + "+0000");
+						//filter by start date and end date of the outlier
+						data2 = {}; 
+						var startTime = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T") + "+0000");
+						var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T") + "+0000");
 
-					for (idx in raw_data) {
-						if (min_latitude_bounding == null || min_latitude_bounding > raw_data[idx][9])
-							min_latitude_bounding = raw_data[idx][9];
-						if (max_latitude_bounding == null || max_latitude_bounding < raw_data[idx][9])
-							max_latitude_bounding = raw_data[idx][9];
-						if (min_longitude_bounding == null || min_longitude_bounding > raw_data[idx][10])
-							min_longitude_bounding = raw_data[idx][10];
-						if (max_longitude_bounding == null || max_longitude_bounding < raw_data[idx][10])
-							max_longitude_bounding = raw_data[idx][10];
+						for (idx in raw_data) {
+							if (min_latitude_bounding == null || min_latitude_bounding > raw_data[idx][9])
+								min_latitude_bounding = raw_data[idx][9];
+							if (max_latitude_bounding == null || max_latitude_bounding < raw_data[idx][9])
+								max_latitude_bounding = raw_data[idx][9];
+							if (min_longitude_bounding == null || min_longitude_bounding > raw_data[idx][10])
+								min_longitude_bounding = raw_data[idx][10];
+							if (max_longitude_bounding == null || max_longitude_bounding < raw_data[idx][10])
+								max_longitude_bounding = raw_data[idx][10];
+								
+							if (!(raw_data[idx][3] in selectedBuses)) {
+								continue;
+							}
+							var ts = new Date(raw_data[idx][11].substring(0, 19).replace(" ", "T") + "+0000");
+						  
+							if(+startTime.getUTCHours() > +ts.getUTCHours()) {
+								continue;
+							}
+							else if (+startTime.getUTCHours() == +ts.getUTCHours()) {
+								if (+startTime.getUTCMinutes() > +ts.getUTCMinutes()) {
+									continue;
+								}
+							}
 							
-						if (!(raw_data[idx][3] in selectedBuses)) {
-							continue;
-						}
-						var ts = new Date(raw_data[idx][11].substring(0, 19).replace(" ", "T") + "+0000");
-					  
-						if(+startTime.getUTCHours() > +ts.getUTCHours()) {
-							continue;
-						}
-						else if (+startTime.getUTCHours() == +ts.getUTCHours()) {
-							if (+startTime.getUTCMinutes() > +ts.getUTCMinutes()) {
+							if(+endTime.getUTCHours() < +ts.getUTCHours()) {
 								continue;
 							}
-						}
-						
-						if(+endTime.getUTCHours() < +ts.getUTCHours()) {
-							continue;
-						}
-						else if (+endTime.getUTCHours() == +ts.getUTCHours()) {
-							if (+endTime.getUTCMinutes() < +ts.getUTCMinutes()) {
-								continue;
+							else if (+endTime.getUTCHours() == +ts.getUTCHours()) {
+								if (+endTime.getUTCMinutes() < +ts.getUTCMinutes()) {
+									continue;
+								}
 							}
+							if (!(raw_data[idx][3] in data2)) {
+								data2[raw_data[idx][3]] = []
+							}
+							data2[raw_data[idx][3]].push(raw_data[idx]);
 						}
-						if (!(raw_data[idx][3] in data2)) {
-							data2[raw_data[idx][3]] = []
-						}
-						data2[raw_data[idx][3]].push(raw_data[idx]);
 					}
-						
+
 					//add to the temporal chart
 					/*for (var key in data2) {
 						vis.append('svg:path')
@@ -735,8 +753,76 @@
 					lines_outliers[+data[row]['Linha']][data[row]['Onibus']] = 1; //add bus
 					lines_outliers_total[(+data[row]['Linha']) + "_" + data[row]['Onibus']] = 1;
 				}
+				
+				var barchart_data = [];
+				var max = 0;
+				for (line in lines_outliers)
+				{
+					barchart_data.push({key: line, number_of_outliers: Object.keys(lines_outliers[line]).length});
+					if (Object.keys(lines_outliers[line]).length > max)
+						max = Object.keys(lines_outliers[line]).length;
+				}
 				//add "All"
-				var lstbox = document.getElementById("lstbox_lines");
+				var width = 280,//420
+					barHeight = 20;
+
+				var x = d3.scale.linear()
+					.domain([0, d3.max(barchart_data, function(d) { return d.number_of_outliers; })])
+					.range([0, width]);
+
+				var chart = d3.select(".barchart")
+					.attr("width", width)
+					.attr("height", barHeight * barchart_data.length);
+
+				var bar = chart.selectAll("g")
+					.data(barchart_data)
+				  .enter().append("g")
+					.attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+
+				bar.append("rect")
+					.attr("width",  function(d) { return x(d.number_of_outliers); })
+					.attr("height", barHeight - 1)
+					.on("click", function(d, i) {
+									d3.select(".selected").style({fill: "steelblue"});
+									d3.select(".selected").classed("selected", false);
+
+									d3.select(this).classed("selected", true);
+									d3.select(this).style({fill: 'red'});
+									selectedLines = [d.key];
+									loadPts();
+								 })
+					.on("mouseover", function(d, i) {
+										d3.select(this).style({opacity: '0.6'});
+										})
+					.on("mouseout", function(d, i) {
+										d3.select(this).style({opacity: '1.0'});
+									 });
+
+				bar.append("text")
+					.attr("x", function(d) { return (d.key).length * 5.5 + 1; })
+					.attr("y", barHeight / 2)
+					.attr("dy", ".35em")
+					.text(function(d) { return d.key; })
+					.on("click", function(d, i) {
+									selectedLines = [d.key];
+									console.log(d.key);
+									loadPts();
+								 });
+
+				
+				bar.append("text")
+					.attr("x", function(d) { return x(d.number_of_outliers) - 3; })
+					.attr("y", barHeight / 2)
+					.attr("dy", ".35em")
+					.text(function(d) { return d.number_of_outliers; })
+					.on("click", function(d, i) {
+									selectedLines = [d.key];
+									console.log(d.key);
+									loadPts();
+								 });
+					
+				
+				/*var lstbox = document.getElementById("lstbox_lines");
 				var opt; 
 				opt = document.createElement("Option"); 
 				opt.text = "All     ("+ Object.keys(lines_outliers_total).length + " outliers)"; //Textbox's value
@@ -754,7 +840,7 @@
 					opt.text = key +"     ("+ Object.keys(lines_outliers[key]).length + " outliers)"; //Textbox's value
 					opt.value = key; //Textbox's value
 					lstbox.add(opt);
-				}      
+				}*/
 			});
 		}
 		function format2digits(n){
@@ -762,13 +848,13 @@
         }
 		function loadPts() {
 			var lstbox = document.getElementById("lstbox_lines");
-			selectedLines = [];
+			//selectedLines = [];
 			
-			for(var i=0; i<lstbox.options.length; i++){
+			/*for(var i=0; i<lstbox.options.length; i++){
 				if (lstbox.options[i].selected){
 					selectedLines.push((lstbox.options[i].value));
 				}
-			}
+			}*/
 			//remove all existing lines in the temporal chart
 			vis.selectAll("path.line").remove();
             $(".marker2").remove();
