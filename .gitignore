@@ -1,6 +1,6 @@
 caffe/results_experiments/15/out.log~
 Outlier_Vis/IBM0015.csv
-Outlier_Vis/data_separated_by_line_and_day
+Outlier_Vis/data_separated_by_line_and_day/*
 !Outlier_Vis/data_separated_by_line_and_day/1
 !Outlier_Vis/data_separated_by_line_and_day/2
 !Outlier_Vis/data_separated_by_line_and_day/3
