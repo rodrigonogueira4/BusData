@@ -28,6 +28,7 @@
 		  height: 20px;
 		  padding-right: 100px;
 		  font: 10px sans-serif;
+          z-index: 1;
 		}
 
 		.rawpt circle {
@@ -44,6 +45,7 @@
 		  height: 1000px;
 		  padding-right: 100px;
 		  font: 10px sans-serif;
+          z-index: 2;
 		}
 
 		.outliers circle {
@@ -222,6 +224,7 @@
 									return yScale(Math.abs(+d[9] - selectedOutlier.LatitudePonto) + Math.abs(+d[10] - selectedOutlier.LongitudePonto ));
 							  })
 							  .interpolate("basis");
+        
 	    //MOD THIS
         //xScale.domain(d3.extent(data, function(d) { return d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"); }));
         //xScale.domain([d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 09:36:03"),d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 11:36:03")]);
