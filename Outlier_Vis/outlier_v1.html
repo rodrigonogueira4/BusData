@@ -328,7 +328,7 @@
 			raw_data_load_callback_count = selectedLines.length;
 			
 			for (i=0; i < selectedLines.length; i++) {
-				d3.text("http://http://rodrigonogueira4.github.io/BusData/Outlier_Vis/data_separated_by_line_and_day/"+selectedLines[i]+"/7-1-2014", function(text) {
+				d3.text("http://rodrigonogueira4.github.io/BusData/Outlier_Vis/data_separated_by_line_and_day/"+selectedLines[i]+"/7-1-2014", function(text) {
 					raw_data = d3.csv.parseRows(text);
 					
 					//do sampling
