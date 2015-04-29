@@ -860,15 +860,13 @@
 				var barchart_data = [];
 				var max = 0;
         
-        var linetmp = "";
-				for (line in lines_outliers)
+        for (line in lines_outliers)
 				{
-          linetmp = line;
-					barchart_data.push({key: line, number_of_outliers: Object.keys(lines_outliers[line]).length});
+        	barchart_data.push({key: line, number_of_outliers: Object.keys(lines_outliers[line]).length});
 					if (Object.keys(lines_outliers[line]).length > max)
 						max = Object.keys(lines_outliers[line]).length;
 				}
-        alert(linetmp);
+        
 				//add "All"
 				var width = 280,//420
 					barHeight = 20;
