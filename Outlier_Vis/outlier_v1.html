@@ -329,7 +329,7 @@
 			raw_data_load_callback_count = selectedLines.length;
 			
 			for (i=0; i < selectedLines.length; i++) {
-				//d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/7-1-2014", function(text) {
+				
 				d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/" + dateFile, function(text) {
 
 					raw_data = d3.csv.parseRows(text);
@@ -435,7 +435,7 @@
 						   .attr('fill', 'none');
 					}*/
 	
-					raw_data_load_callback();
+                    raw_data_load_callback();
 					//var overlay_raw = new google.maps.OverlayView();
 					// Add the container when the overlay is added to the map.
 					// Bind our overlay to the map…
@@ -513,23 +513,23 @@
 											  }
 										   )
 										   .attr("class", "marker");
-				   
+			//console.log(marker);
 			// Add a circle.
+            
 			marker.append("svg:circle")
 				  //.attr("r", function(d) { return (3.0 + 5.0 * d.value['TimeStampPercentage']) })
 				  .attr("r", 6.0)
 				  .attr("cx", padding)
 				  .attr("cy", padding)
 				  .on("click", function(d, i) {
-					  tooltip.style("visibility", "visible");
-					  //alert("Selected node:\n" + "Start: " + d.value['TimeStampStart'] + "\nEnd:   " + d.value['TimeStampEnd'] + "\nLine: " + d.value['Line']);
-                      alert("Selected node:\n" +
+					  //tooltip.style("visibility", "visible");
+					  alert("Selected node:\n" +
                             "Start: " + d.value['TimeStampStart'] + "\n"+
                             "End:   " + d.value['TimeStampEnd'] + "\n"+
                             "Line: " + d.value['Line'] + "\n"+
                             "Bus Id: " + d.value['BusId']);					  
 				  });
-            
+            console.log(marker);
 			//Add a label.
 			/*marker.append("svg:text")
 				  .attr("x", padding + 7)
@@ -621,7 +621,6 @@
 		function loadOutliersPerDay() {
 			var barchart_data = [];
 			d3.csv(outliersperdayfile, function(data) {
-			//alert(data);
 				data.forEach(function(d) {
 					barchart_data.push({key: d.Date, number_of_outliers: d.NumberOfOutliers});
 				});
@@ -718,8 +717,8 @@
 				for (row in data) {
 					var minreftime = parseDate(data[row]['TimeStamp_19']); 
 					var maxreftime = parseDate(data[row]['TimeStamp_0']); 
-                    console.log("starttime: " + data[row]['TimeStamp_19']);
-                    console.log("endtime: " + data[row]['TimeStamp_0']);
+                    //console.log("starttime: " + data[row]['TimeStamp_19']);
+                    //console.log("endtime: " + data[row]['TimeStamp_0']);
                     
 					for (i = 0; i<20; i++){
 						var timestamp = parseDate(data[row]['TimeStamp_' + i]);
