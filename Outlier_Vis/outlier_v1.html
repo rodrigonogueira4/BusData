@@ -80,18 +80,18 @@
 			width: 300px;
 		}
 		
-    .verticalBarchartDiv {
+		.verticalBarchartDiv {
 			overflow-x: scroll;
-			height: 300px;
-			width: 800px;
-    }
+			height: 200px;
+			width: 1263px;
+		}
 
-    .verticalBarchart rect {
-			fill: steelblue;
+		.verticalBarchart rect {
+			fill: limegreen;
 		}
 
 		.verticalBarchart text {
-			fill: white;
+			fill: black;
 			font: 10px sans-serif;
 			text-anchor: end;
 		}
@@ -153,7 +153,8 @@
 	<script type="text/javascript">
 		var maxPts = 1000;
 		var outliersfile = "output_7_jan.csv";
-    var outliersperdayfile = "number_of_outliers_per_day.csv";
+		var outliersperdayfile = "number_of_outliers_per_day.csv";
+		var dateFile = "7-1-2014";
 		var startHour;
 		var startMinute;
 		var rangeHour;
@@ -328,7 +329,9 @@
 			raw_data_load_callback_count = selectedLines.length;
 			
 			for (i=0; i < selectedLines.length; i++) {
-				d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/7-1-2014", function(text) {
+				//d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/7-1-2014", function(text) {
+				d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/" + dateFile, function(text) {
+
 					raw_data = d3.csv.parseRows(text);
 					
 					//do sampling
@@ -615,41 +618,41 @@
             
 		};
 
-    function loadOutliersPerDay() {
-				var barchart_data = [];
-				d3.csv(outliersperdayfile, function(data) {
-          //alert(data);
-          data.forEach(function(d) {
-            barchart_data.push({key: d.Date, number_of_outliers: d.NumberOfOutliers});
-          });
+		function loadOutliersPerDay() {
+			var barchart_data = [];
+			d3.csv(outliersperdayfile, function(data) {
+			//alert(data);
+				data.forEach(function(d) {
+					barchart_data.push({key: d.Date, number_of_outliers: d.NumberOfOutliers});
+				});
 
-				  var width = 20;
-					barHeight = 180;
+				var barWidth = 40;
+				var height = 179;
 
-				var x = d3.scale.linear()
-					.domain([0, d3.max(barchart_data, function(d) { return d.number_of_outliers; })])
-					.range([0, width]);
+				var y = d3.scale.linear()
+					.domain([0, d3.max(barchart_data, function(d) { return d.number_of_outliers*1.05; })])
+					.range([0, height]);
 
 				var chart = d3.select(".verticalBarchart")
-					.attr("width", width * barchart_data.length)
-					.attr("height", barHeight);
+								.attr("width", barWidth * barchart_data.length)
+								.attr("height", height);
 
 				var bar = chart.selectAll("g")
-					.data(barchart_data)
-				  .enter().append("g")
-					.attr("transform", function(d, i) { return "translate(" + i * width + "," + (barHeight - x(d.number_of_outliers)) + ")"; });
+								.data(barchart_data)
+								.enter().append("g")
+								.attr("transform", function(d, i) { return "translate(" + i * barWidth + "," + (height - y(d.number_of_outliers)) + ")"; });
 
 				bar.append("rect")
-					.attr("height",  function(d) { return x(d.number_of_outliers); })
-					.attr("width", width - 1)
+					.attr("height",  function(d) { return y(d.number_of_outliers); })
+					.attr("width", barWidth - 1)
 					.on("click", function(d, i) {
-									d3.select(".selected").style({fill: "steelblue"});
-									d3.select(".selected").classed("selected", false);
+									d3.select(".vselected").style({fill: "limegreen"});
+									d3.select(".vselected").classed("vselected", false);
 
-									d3.select(this).classed("selected", true);
+									d3.select(this).classed("vselected", true);
 									d3.select(this).style({fill: 'red'});
-									selectedLines = [d.key];
-									loadPts();
+									dateFile = d.key + "-2013";
+									loadLstboxFromOutliers();
 								 })
 					.on("mouseover", function(d, i) {
 										d3.select(this).style({opacity: '0.6'});
@@ -659,31 +662,30 @@
 									 });
 
 				bar.append("text")
-					.attr("x", function(d) { return (d.key).length * 5.5 + 1; })
-					.attr("y", barHeight / 2)
-					.attr("dy", ".35em")
+					.attr("x", barWidth / 2)
+					.attr("y", function (d) { y(d.number_of_outliers); })
+					.attr("dx", "1em")
+					.attr("transform", function(d) { return "translate(0, " + (y(d.number_of_outliers) - 3) + ")"; })
 					.text(function(d) { return d.key; })
 					.on("click", function(d, i) {
-									selectedLines = [d.key];
-									console.log(d.key);
-									loadPts();
+									dateFile = d.key + "-2013";
+									loadLstboxFromOutliers();
 								 });
 
 				
 				bar.append("text")
-					.attr("x", function(d) { return x(d.number_of_outliers) - 3; })
-					.attr("y", barHeight / 2)
-					.attr("dy", ".35em")
+					.attr("x", barWidth / 2)
+					.attr("y", function (d) { y(d.number_of_outliers); })
+					.attr("dx", ".8em")
+					//.attr("transform", function(d) { return "translate(0, " + 12 + ")"; })
 					.text(function(d) { return d.number_of_outliers; })
 					.on("click", function(d, i) {
-									selectedLines = [d.key];
-									console.log(d.key);
-									loadPts();
+									dateFile = d.key + "-2013";
+									loadLstboxFromOutliers();
 								 });
 
-        });
-    }
-
+			});
+		}
 			
 		function loadPtsOutliers() {
 			overlay_outliers.setMap(null);
@@ -967,7 +969,7 @@
 			loadPtsOutliers();
 			loadPtsRaw();	  
 		}
-    loadOutliersPerDay();
+		loadOutliersPerDay();
 		loadLstboxFromOutliers();
     </script>
 </html>
