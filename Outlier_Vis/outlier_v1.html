@@ -327,14 +327,8 @@
 			overlay_raw.setMap(null);
 			raw_data = null;
 			raw_data_load_callback_count = selectedLines.length;
-<<<<<<< HEAD
-			
+
 			for (i=0; i < selectedLines.length; i++) {
-				//d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/7-1-2014", function(text) {
-=======
-			for (i=0; i < selectedLines.length; i++) {
-				
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
 				d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/" + dateFile, function(text) {
 
 					raw_data = d3.csv.parseRows(text);
@@ -438,13 +432,8 @@
 						   .attr('stroke-width', 1)
 						   .attr("class", "line")
 						   .attr('fill', 'none');
-					}*/
-	
-<<<<<<< HEAD
-					raw_data_load_callback();
-=======
+					}*/	
                     raw_data_load_callback();
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
 					//var overlay_raw = new google.maps.OverlayView();
 					// Add the container when the overlay is added to the map.
 					// Bind our overlay to the map…
@@ -522,11 +511,7 @@
 											  }
 										   )
 										   .attr("class", "marker");
-<<<<<<< HEAD
-				   
-=======
-			//console.log(marker);
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
+
 			// Add a circle.
 			marker.append("svg:circle")
 				  //.attr("r", function(d) { return (3.0 + 5.0 * d.value['TimeStampPercentage']) })
@@ -534,14 +519,8 @@
 				  .attr("cx", padding)
 				  .attr("cy", padding)
 				  .on("click", function(d, i) {
-<<<<<<< HEAD
 					  tooltip.style("visibility", "visible");
-					  //alert("Selected node:\n" + "Start: " + d.value['TimeStampStart'] + "\nEnd:   " + d.value['TimeStampEnd'] + "\nLine: " + d.value['Line']);
                       alert("Selected node:\n" +
-=======
-					  //tooltip.style("visibility", "visible");
-					  alert("Selected node:\n" +
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
                             "Start: " + d.value['TimeStampStart'] + "\n"+
                             "End:   " + d.value['TimeStampEnd'] + "\n"+
                             "Line: " + d.value['Line'] + "\n"+
@@ -633,19 +612,11 @@
     
 		overlay_outliers.onRemove = function() {
 			$(".outliers").remove();
-<<<<<<< HEAD
-            
-=======
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
 		};
 
 		function loadOutliersPerDay() {
 			var barchart_data = [];
 			d3.csv(outliersperdayfile, function(data) {
-<<<<<<< HEAD
-			//alert(data);
-=======
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
 				data.forEach(function(d) {
 					barchart_data.push({key: d.Date, number_of_outliers: d.NumberOfOutliers});
 				});
@@ -747,13 +718,8 @@
 				for (row in data) {
 					var minreftime = parseDate(data[row]['TimeStamp_19']); 
 					var maxreftime = parseDate(data[row]['TimeStamp_0']); 
-<<<<<<< HEAD
                     console.log("starttime: " + data[row]['TimeStamp_19']);
                     console.log("endtime: " + data[row]['TimeStamp_0']);
-=======
-                    //console.log("starttime: " + data[row]['TimeStamp_19']);
-                    //console.log("endtime: " + data[row]['TimeStamp_0']);
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
                     
 					for (i = 0; i<20; i++){
 						var timestamp = parseDate(data[row]['TimeStamp_' + i]);
@@ -954,30 +920,7 @@
 									console.log(d.key);
 									loadPts();
 								 });
-<<<<<<< HEAD
-					
-				/*var lstbox = document.getElementById("lstbox_lines");
-				var opt; 
-				opt = document.createElement("Option"); 
-				opt.text = "All     ("+ Object.keys(lines_outliers_total).length + " outliers)"; //Textbox's value
-				opt.value =  "All"; //Textbox's value
-				lstbox.add(opt);
-                
-                var lines_keys = Object.keys(lines_outliers)
-                lines_keys = lines_keys.sort();
-				for (i in lines_keys){
-                    var key = lines_keys[i];
-					//add the lines and # of outliersto to the listbox
-					var lstbox = document.getElementById("lstbox_lines");
-					var opt; 
-					opt = document.createElement("Option"); 
-					opt.text = key +"     ("+ Object.keys(lines_outliers[key]).length + " outliers)"; //Textbox's value
-					opt.value = key; //Textbox's value
-					lstbox.add(opt);
-				}*/
-=======
 									
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
 			});
 		}
 		function format2digits(n){
@@ -985,17 +928,6 @@
         }
 		function loadPts() {
 			var lstbox = document.getElementById("lstbox_lines");
-<<<<<<< HEAD
-			//selectedLines = [];
-			
-			/*for(var i=0; i<lstbox.options.length; i++){
-				if (lstbox.options[i].selected){
-					selectedLines.push((lstbox.options[i].value));
-				}
-			}*/
-=======
-
->>>>>>> f217f1d550fdfa73d9476fab791d2dc2d8e5b8f9
 			//remove all existing lines in the temporal chart
 			vis.selectAll("path.line").remove();
             $(".marker2").remove();
