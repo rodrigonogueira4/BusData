@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>simple demo</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.min.css">
+  <!--<script src="lib/jquery/jquery.min.js" charset="utf-8"></script>
+  <script src="lib/bootstrap/js/bootstrap.min.js" charset="utf-8"></script>-->
+  <script src="lib/d3/d3.min.js" charset="utf-8"></script>
+  <script src="js/dimension.js" charset="utf-8"></script>
+  <script src="js/scatterplot.js" charset="utf-8"></script>
+  <script src="js/featurelist.js" charset="utf-8"></script>
+  <script src="js/histogram.js" charset="utf-8"></script>
+  <script src="js/state.js" charset="utf-8"></script>
+  <script src="js/util.js" charset="utf-8"></script>
+  <style>
+  .featureUl {
+    padding: 0;
+    margin: 0;
+  }
+
+  .featureLi {
+    list-style-type: none;
+    cursor: pointer;
+    padding: 5px;
+  }
+
+  .featureLi:hover {
+    background: #e7e7e7;
+  }
+
+  .featureLiSel, .featureLiSel:hover {
+    background: rgb(55,126,184);
+    font-weight: bold;
+    color: white;
+  }
+
+  .axis path {
+    display: none;
+  }
+
+  .axis line {
+    shape-rendering: crispEdges;
+    stroke: lightgray;
+  }
+
+  .axis .minor line {
+    stroke: lightgray;
+    stroke-dasharray: 2,2;
+  }
+  </style>
+</head>
+<body onload="start()">
+  <div id="head"></div>
+  <div id="listA"></div>
+  <div id="main"></div>
+  <div id="listB"></div>
+  <div id="histogram"></div>
+
+<script>
+function start() {
+  var size = 500;
+  var width = 200;
+  var height = 100;
+  var radius = 2;
+  var file = "data/mock_outliers_info_per_line.csv";
+  var columns = "NumberOfOutliers,NumberOfPoints,AverageOutlierDistance".split(",");
+  var fA = "NumberOfOutliers";
+  var fB = "NumberOfPoints";
+  var allIxs = [];
+
+  var state = new State();
+  var scatterplot = null;
+  var featurelistA = null;
+  var featurelistB = null;
+  var histogram = null;
+
+  d3.select("body").style({
+    "padding": "5px"
+  });
+
+  var main = d3.select("#main");
+  var listA = d3.select("#listA");
+  var listB = d3.select("#listB");
+  var hl = d3.select("#histogram");
+  var head = d3.select("#head").style({
+    "display": "block",
+    "width": (width + size + 10) + "px"
+  });
+
+<!--   var buttons = head.style({ -->
+<!--     "margin-bottom": "5px" -->
+<!--   }).append("div").classed({ -->
+<!--     "btn-group": true -->
+<!--   }); -->
+<!--   buttons.append("button").classed({ -->
+<!--     "btn": true, -->
+<!--     "btn-default": true -->
+<!--   }).text("swap axes").on("click", function() { -->
+<!--     var fA = state.featureA(); -->
+<!--     var fB = state.featureB(); -->
+<!--     state.featureB(fA); -->
+<!--     state.featureA(fB); -->
+<!--     state.update(true, true, false, false); -->
+<!--   }); -->
+<!--   buttons.append("button").classed({ -->
+<!--     "btn": true, -->
+<!--     "btn-default": true -->
+<!--   }).text("remove selection").on("click", function() { -->
+<!--     var newIxs = removeIxs(state.ixs(), state.selIxs()); -->
+<!--     state.ixs(newIxs); -->
+<!--     state.selIxs([]); -->
+<!--     state.update(false, false, true, true); -->
+<!--   }); -->
+<!--   buttons.append("button").classed({ -->
+<!--     "btn": true, -->
+<!--     "btn-default": true -->
+<!--   }).text("show all").on("click", function() { -->
+<!--     state.ixs(allIxs); -->
+<!--     state.update(false, false, true, false); -->
+<!--   }); -->
+
+  d3.csv(file, function(error, data) {
+    if(error) {
+      console.warn(error);
+      return;
+    }
+
+    var featureMap = {};
+    state.clearListeners();
+    allIxs = Dimension.loadAll(data, columns, featureMap);
+    state.ixs(allIxs);
+    state.selIxs([]);
+    state.featureA(featureMap[fA]);
+    state.featureB(featureMap[fB]);
+    var features = Object.keys(featureMap).map(function(n) {
+      return featureMap[n];
+    });
+    if(!features.length) {
+      console.warn("no features loaded!");
+      return;
+    }
+
+    main.selectAll("*").remove();
+    listA.selectAll("*").remove();
+    listB.selectAll("*").remove();
+    hl.selectAll("*").remove();
+
+    scatterplot = new Scatterplot(main, size, radius, 750, "easeInOutCubic", function() { // initSelection
+      state.tmpIxs([]);
+      state.update(false, false, false, true);
+      return state;
+    }, function(ixs, done) { // selectPoints
+      if(done) {
+        state.selIxs(ixs);
+        state.tmpIxs([]);
+      } else {
+        state.tmpIxs(ixs);
+      }
+      state.update(false, false, false, true);
+    });
+    var lastIxs = [];
+    var lastSel = [];
+    var lastTmp = [];
+    state.addListener(function(s, cA, cB, cIxs, cSel) {
+      if(cA || cB || cIxs) {
+        scatterplot.update(s.featureA(), s.featureB(), s.ixs());
+        var curIxs = s.ixs();
+        scatterplot.colorIxs(removeIxs(curIxs, lastIxs), s.color());
+        lastIxs = curIxs;
+      }
+      if(cIxs || cSel) {
+        var selIxs = s.selIxs();
+        var tmpIxs = s.tmpIxs();
+        var restIxs = unionIxs(selIxs, tmpIxs);
+        var lastRest = unionIxs(lastSel, lastTmp);
+        scatterplot.colorIxs(removeIxs(lastRest, restIxs), s.color());
+        scatterplot.colorIxs(removeIxs(selIxs, lastSel), s.selColor());
+        scatterplot.colorIxs(removeIxs(tmpIxs, lastTmp), s.tmpColor());
+        lastSel = selIxs;
+        lastTmp = tmpIxs;
+      }
+    });
+
+    featurelistA = new Featurelist(listA, width, size, function(f) { // selectFeature
+      state.featureA(f);
+      state.update(true, false, false, false);
+    });
+    featurelistA.setFeatures(features);
+    state.addListener(function(s, cA, cB, cIxs, cSel) {
+      if(cA) {
+        featurelistA.update(s.featureA());
+      }
+    });
+
+    featurelistB = new Featurelist(listB, width, size, function(f) { // selectFeature
+      state.featureB(f);
+      state.update(false, true, false, false);
+    });
+    featurelistB.setFeatures(features);
+    state.addListener(function(s, cA, cB, cIxs, cSel) {
+      if(cB) {
+        featurelistB.update(s.featureB());
+      }
+    });
+
+    var pads = scatterplot.padding();
+    hl.append("span").style({
+      "width": (width + 5 + pads[3] /* left padding */) + "px",
+      "display": "inline-block"
+    });
+    var hw = size - pads[3] /* left padding */ - pads[1] /* right padding */;
+    histogram = new Histogram(hl, hw, height, 750, "easeInOutCubic", function(ixs) { // onSelect
+      state.selIxs(ixs);
+      state.update(false, false, false, true);
+    });
+    state.addListener(function(s, cA, cB, cIxs, cSel) {
+      if(cA || cIxs || cSel) {
+        histogram.update(s, cA || cIxs);
+      }
+    });
+  });
+}
+</script>
+
+</body>
+</html>

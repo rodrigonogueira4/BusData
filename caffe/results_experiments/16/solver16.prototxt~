@@ -1,0 +1,14 @@
+net: "/home/rfn216/BusRio/train8.prototxt"
+test_iter: 20000
+test_interval: 100000
+base_lr: 0.0001
+lr_policy: "step"
+gamma: 0.1
+stepsize: 500000
+display: 1000
+max_iter: 2000000
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 100000
+snapshot_prefix: "/work/rfn216/bus_rio/busrio8"
+solver_mode: GPU
