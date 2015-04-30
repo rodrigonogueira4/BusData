@@ -152,9 +152,9 @@
 
 	<script type="text/javascript">
 		var maxPts = 1000;
-		var outliersfile = "output_7_jan.csv";
+		var outliersfile = "5_12.csv";
 		var outliersperdayfile = "number_of_outliers_per_day.csv";
-		var dateFile = "7-1-2014";
+		var dateFile = "5-12-2013";
 		var startHour;
 		var startMinute;
 		var rangeHour;
@@ -672,10 +672,11 @@
 					.on("click", function(d, i) {
 									d3.select(".vselected").style({fill: "limegreen"});
 									d3.select(".vselected").classed("vselected", false);
-
 									d3.select(this).classed("vselected", true);
 									d3.select(this).style({fill: 'red'});
-									dateFile = d.key + "-2013";
+                  fields = d.key.split("/");
+									dateFile = fields[1] + "-" + fields[0] + "-2013";
+                  outliersfile = fields[1] + "_" + fields[0] + ".csv";
 									loadLstboxFromOutliers();
 								 })
 					.on("mouseover", function(d, i) {
@@ -692,7 +693,9 @@
 					.attr("transform", function(d) { return "translate(0, " + (y(d.number_of_outliers) - 3) + ")"; })
 					.text(function(d) { return d.key; })
 					.on("click", function(d, i) {
-									dateFile = d.key + "-2013";
+                  fields = d.key.split("/");
+									dateFile = fields[1] + "-" + fields[0] +  "-2013";
+                  outliersfile = fields[1] + "_" + fields[0] + ".csv";
 									loadLstboxFromOutliers();
 								 });
 
@@ -704,7 +707,9 @@
 					//.attr("transform", function(d) { return "translate(0, " + 12 + ")"; })
 					.text(function(d) { return d.number_of_outliers; })
 					.on("click", function(d, i) {
-									dateFile = d.key + "-2013";
+                  fields = d.key.split("/");
+									dateFile = fields[1] + "-" + fields[0] + "-2013";
+                  outliersfile = fields[1] + "_" + fields[0] + ".csv";
 									loadLstboxFromOutliers();
 								 });
 
@@ -875,19 +880,22 @@
 				for (row in data){
 					if (!(+data[row]['Linha'] in lines_outliers)) {
 						lines_outliers[data[row]['Linha']] = {};
-					}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-					lines_outliers[+data[row]['Linha']][data[row]['Onibus']] = 1; //add bus
+					}                                                                                                                                                                                                
+
+          lines_outliers[+data[row]['Linha']][data[row]['Onibus']] = 1; //add bus
 					lines_outliers_total[(+data[row]['Linha']) + "_" + data[row]['Onibus']] = 1;
 				}
 				
 				var barchart_data = [];
 				var max = 0;
-				for (line in lines_outliers)
+        
+        for (line in lines_outliers)
 				{
-					barchart_data.push({key: line, number_of_outliers: Object.keys(lines_outliers[line]).length});
+        	barchart_data.push({key: line, number_of_outliers: Object.keys(lines_outliers[line]).length});
 					if (Object.keys(lines_outliers[line]).length > max)
 						max = Object.keys(lines_outliers[line]).length;
 				}
+        
 				//add "All"
 				var width = 280,//420
 					barHeight = 20;
@@ -948,7 +956,6 @@
 								 });
 <<<<<<< HEAD
 					
-				
 				/*var lstbox = document.getElementById("lstbox_lines");
 				var opt; 
 				opt = document.createElement("Option"); 
