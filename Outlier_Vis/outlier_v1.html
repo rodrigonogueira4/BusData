@@ -327,7 +327,6 @@
 			overlay_raw.setMap(null);
 			raw_data = null;
 			raw_data_load_callback_count = selectedLines.length;
-			
 			for (i=0; i < selectedLines.length; i++) {
 				
 				d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/" + dateFile, function(text) {
@@ -515,7 +514,6 @@
 										   .attr("class", "marker");
 			//console.log(marker);
 			// Add a circle.
-            
 			marker.append("svg:circle")
 				  //.attr("r", function(d) { return (3.0 + 5.0 * d.value['TimeStampPercentage']) })
 				  .attr("r", 6.0)
@@ -529,7 +527,7 @@
                             "Line: " + d.value['Line'] + "\n"+
                             "Bus Id: " + d.value['BusId']);					  
 				  });
-            console.log(marker);
+            
 			//Add a label.
 			/*marker.append("svg:text")
 				  .attr("x", padding + 7)
@@ -615,7 +613,6 @@
     
 		overlay_outliers.onRemove = function() {
 			$(".outliers").remove();
-            
 		};
 
 		function loadOutliersPerDay() {
@@ -916,27 +913,7 @@
 									console.log(d.key);
 									loadPts();
 								 });
-					
-				
-				/*var lstbox = document.getElementById("lstbox_lines");
-				var opt; 
-				opt = document.createElement("Option"); 
-				opt.text = "All     ("+ Object.keys(lines_outliers_total).length + " outliers)"; //Textbox's value
-				opt.value =  "All"; //Textbox's value
-				lstbox.add(opt);
-                
-                var lines_keys = Object.keys(lines_outliers)
-                lines_keys = lines_keys.sort();
-				for (i in lines_keys){
-                    var key = lines_keys[i];
-					//add the lines and # of outliersto to the listbox
-					var lstbox = document.getElementById("lstbox_lines");
-					var opt; 
-					opt = document.createElement("Option"); 
-					opt.text = key +"     ("+ Object.keys(lines_outliers[key]).length + " outliers)"; //Textbox's value
-					opt.value = key; //Textbox's value
-					lstbox.add(opt);
-				}*/
+									
 			});
 		}
 		function format2digits(n){
@@ -944,13 +921,7 @@
         }
 		function loadPts() {
 			var lstbox = document.getElementById("lstbox_lines");
-			//selectedLines = [];
-			
-			/*for(var i=0; i<lstbox.options.length; i++){
-				if (lstbox.options[i].selected){
-					selectedLines.push((lstbox.options[i].value));
-				}
-			}*/
+
 			//remove all existing lines in the temporal chart
 			vis.selectAll("path.line").remove();
             $(".marker2").remove();
