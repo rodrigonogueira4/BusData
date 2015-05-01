@@ -238,19 +238,6 @@
 									return yScale(Math.abs(+d.LatitudePonto - selectedOutlier.LatitudePonto ) + Math.abs(+d.LongitudePonto - selectedOutlier.LongitudePonto ));
 							   })
 							   .interpolate("basis");
-    
-		var lineGenRawPts = d3.svg.line()
-							  .x(function(d) {
-									var ts = new Date(d[11].substring(0, 19).replace(" ", "T")+ "+0000");
-                                    var startTime= new Date(d.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-                                    var endTime = new Date(d.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
-									//return xScale(d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"))
-                                    return xScale((ts - startTime)/(endTime-startTime));
-							  })
-							  .y(function(d) {
-									return yScale(Math.abs(+d[9] - selectedOutlier.LatitudePonto) + Math.abs(+d[10] - selectedOutlier.LongitudePonto ));
-							  })
-							  .interpolate("basis");
         
 	    //MOD THIS
         //xScale.domain(d3.extent(data, function(d) { return d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"); }));
@@ -389,7 +376,7 @@
                             }
 						}
                         
-						//filter by start date and end date of the outlier
+						//filter by start date and end date of the bus
 						data2 = {}; 
 
 						for (idx in raw_data) {
@@ -429,14 +416,21 @@
 							if (!(raw_data[idx][3] in data2)) {
 								data2[raw_data[idx][3]] = []
 							}
-							data2[raw_data[idx][3]].push(raw_data[idx]);
+                            item = {TimeStamp: raw_data[idx][11],
+                                    TimeStampStart: selectedBuses2[raw_data[idx][3]][0],
+                                    TimeStampEnd: selectedBuses2[raw_data[idx][3]][1],
+                                    LatitudePonto: raw_data[idx][9],
+                                    LongitudePonto: raw_data[idx][10],
+                                   }
+                            
+							data2[raw_data[idx][3]].push(item);
 						}
 					}
 
 					//add to the temporal chart
 					for (var key in data2) {
 						vis.append('svg:path')
-						   .attr('d', lineGenRawPts(data2[key]))
+						   .attr('d', lineGenOutlier(data2[key]))
 						   .attr('stroke', 'blue')
 						   .attr('stroke-width', 1)
 						   .attr("class", "line")
@@ -818,7 +812,6 @@
                 var endTime = new Date(2000, 0, 0, endTimeAbs.getHours(), endTimeAbs.getMinutes(), 0, 0);
                 outlier_data_by_bus = {};
                 outlier_data_by_bus2 = {};
-                console.log(selectedOutlier);
                 
                 for (row in outlier_data) {
                     //temporary: select pts only for the selected outlier 
