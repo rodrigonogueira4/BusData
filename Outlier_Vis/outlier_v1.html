@@ -391,7 +391,6 @@
                         
 						//filter by start date and end date of the outlier
 						data2 = {}; 
-						
 
 						for (idx in raw_data) {
 							if (min_latitude_bounding == null || min_latitude_bounding > raw_data[idx][9])
@@ -750,6 +749,10 @@
 							TimeStampEnd:data[row]['TimeStamp_0'].substring(0, 19),
 							TimeStamp:data[row]['TimeStamp_'+i],
 							LatitudePonto:data[row]['LatitudePonto_'+i],
+                            LatStart:data[row]['LatitudePonto_19'],
+                            LongStart:data[row]['LongitudePonto_19'],
+                            LatEnd:data[row]['LatitudePonto_0'],
+                            LongEnd:data[row]['LongitudePonto_0'],
 							LongitudePonto:data[row]['LongitudePonto_'+i],
                              TimeStampPrevious: TimeStampPrevious,
 							LatitudePontoPrevious:LatPrevious,
@@ -807,10 +810,16 @@
 				});
                 
                 selectedOutlier = outlier_data[0]; //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
-             
+                
                 //remove duplicated outliers
+                var startTimeAbs = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                var endTimeAbs = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                var startTime = new Date(2000, 0, 0, startTimeAbs.getHours(), startTimeAbs.getMinutes(), 0, 0);
+                var endTime = new Date(2000, 0, 0, endTimeAbs.getHours(), endTimeAbs.getMinutes(), 0, 0);
                 outlier_data_by_bus = {};
                 outlier_data_by_bus2 = {};
+                console.log(selectedOutlier);
+                
                 for (row in outlier_data) {
                     //temporary: select pts only for the selected outlier 
                     if (outlier_data[row]["BusId"] == selectedOutlier["BusId"]){
@@ -821,38 +830,26 @@
                               }
                               outlier_data_by_bus2[outlier_data[row]["BusId"]].push(outlier_data[row]);
 
-                              //update start and end dates of the selected outlier
-                              
-                              var startTimeAbs = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
-                              var endTimeAbs = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                              //update start and end dates of the selected outlier    
                               var tsAbs = new Date(outlier_data[row]["TimeStamp"].substring(0, 19).replace(" ", "T")+ "+0000");
-                              var startTime = new Date(2000, 0, 0, startTimeAbs.getHours(), startTimeAbs.getMinutes(), 0, 0);
-                              var endTime = new Date(2000, 0, 0, endTimeAbs.getHours(), endTimeAbs.getMinutes(), 0, 0);
                               var ts = new Date(2000, 0, 0, tsAbs.getHours(), tsAbs.getMinutes(), 0, 0);
-                              var test = ts>startTime;
-                            console.log("fe");
-                            console.log(ts);
-                              console.log(startTime);
-                            console.log(endTime);
-                            
-                              if (ts < startTime){
-                                  console.log("entrou");
+                          
+                              if (ts <= startTime){
+                                  startTime = ts;
                                   selectedOutlier.TimeStampStart = outlier_data[row]["TimeStamp"];
                                   selectedOutlier.LatStart = outlier_data[row]["LatitudePonto"];
                                   selectedOutlier.LongStart = outlier_data[row]["LongitudePonto"];
                               }
-                              if (ts > endTime){
+                              if (ts >= endTime){
+                                  endTime = ts;
                                   selectedOutlier.TimeStampEnd = outlier_data[row]["TimeStamp"];
                                   selectedOutlier.LatEnd = outlier_data[row]["LatitudePonto"];
-                                  
                                   selectedOutlier.LongEnd = outlier_data[row]["LongitudePonto"];
                               }
                         }
                     }    
 				}
-                console.log("TimeStampEnd"+selectedOutlier.TimeStampEnd);
-                console.log("LatEnd"+selectedOutlier.LatEnd);
-                console.log("LongEnd"+selectedOutlier.LongEnd);
+         
           		//add to the temporal chart
                 for (key in outlier_data_by_bus2){
                     vis.append('svg:path')
