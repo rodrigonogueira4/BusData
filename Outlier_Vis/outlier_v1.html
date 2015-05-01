@@ -110,28 +110,13 @@
 	</style>
 	</head>
 	<body>
-			<div id="dayChart" class="verticalBarchartDiv">
-				<svg class="verticalBarchart"></svg>
-			</div>
-<br>
-<font id="valStartTime"></font><canvas id=canvastime width=800 height=30></canvas><font id="valEndTime"></font>
-<input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>
-<br>
-		<!--<table>
-		<tr>
-		  <td><center>Start Time</center></td>
-		  <td><center>Time Window</center></td>
-		</tr>
-		<tr>
-		  <td><input id="inputStartTime" type="range" min="0" max="1439" value = "0" onchange="loadPts()"/></td>
-		  <td><input id="inputTimeRange" type="range" min="0" max="1439" value = "1439" onchange="loadPts()"/></td>
-          <td></td>
-		</tr>
-		<tr>
-		  <td><center id="valueStartTime"></center></td>
-		  <td><center id="valueTimeRange"></center></td>
-		</tr>
-		</table>-->
+        <div id="dayChart" class="verticalBarchartDiv">
+            <svg class="verticalBarchart"></svg>
+        </div>
+        <br>
+        <font id="valStartTime"></font><canvas id=canvastime width=800 height=30></canvas><font id="valEndTime"></font>
+        <input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>
+        <br>
         
 		<div style="width: 100%; height: 800px; overflow: hidden;">
 			<div class="barchartDiv">
@@ -371,6 +356,7 @@
                             if (raw_data[idx][3] in selectedBuses) {
 							    var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatEnd,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongEnd, 2), 0.5);
 							    if (dist < MAX_DIST){
+                                    //put condition here to get only buses that folow the same direction of the outlier
 							        selectedBuses2[raw_data[idx][3]] = [selectedBuses[raw_data[idx][3]], raw_data[idx][11]]; //put end timestamp along with start timestamp 
 							    }
                             }
@@ -990,7 +976,7 @@
             }
             
             //if the rectangles are too close, space them
-            if (Math.abs(rect1x-rect2x)<40){
+            if (rect2x-rect1x<40){
                 rect1x = Math.max(10,rect2x-40);
             }
             
