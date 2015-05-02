@@ -115,8 +115,8 @@
         </div>
         <br>
         <font id="valStartTime"></font><canvas id=canvastime width=800 height=30></canvas><font id="valEndTime"></font>
-        <input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>
-        <br>
+        <!--<input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>-->
+        <br><br>
         
 		<div style="width: 100%; height: 800px; overflow: hidden;">
 			<div class="barchartDiv">
@@ -534,7 +534,8 @@
 								return "";
 						});*/
             
-            if ($('#ConnectedPts').is(':checked') && (selectedLines[0] != "All")){
+            //if ($('#ConnectedPts').is(':checked') && (selectedLines[0] != "All")){
+            if (selectedLines[0] != "All"){
                 //remove all lines
                 $(".marker2").remove();
                 var marker = outlier_data_layer.selectAll("svg2")
