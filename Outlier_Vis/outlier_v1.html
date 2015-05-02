@@ -133,13 +133,13 @@
 		</div>
 		<div class="container">
 			<div class="jumbotron">
-				<svg id="visualisation" width="1000" height="500"></svg>
+				<svg id="visualisation" width="1000" height="350"></svg>
 			</div>
 		</div>
 	</body>
 
 	<script type="text/javascript">
-		var maxPts = 1000;
+		var maxPts = 2000;
 		var outliersfile = "5_12.csv";
 		var outliersperdayfile = "number_of_outliers_per_day.csv";
 		var dateFile = "5-12-2013";
@@ -148,7 +148,7 @@
 		var endHour;
 		var endMinute;
 		var selectedOutlier;
-		var MAX_DIST = (0.001); //maximum distance to 2 pts be considered close. 1 degree latitude = 100km. 1 meter = 0.00001 degrees. 100 meters = 0.001
+		var MAX_DIST = (0.003); //maximum distance to 2 pts be considered close. 1 degree latitude = 100km. 1 meter = 0.00001 degrees. 100 meters = 0.001
 		var RIO_CENTER_LAT = -22.911773;
 		var RIO_CENTER_LONG = -43.230199;
 		var overlay_outliers = new google.maps.OverlayView();
@@ -169,16 +169,16 @@
     
 		var vis = d3.select("#visualisation"),
             WIDTH = 1000,
-            HEIGHT = 500,
+            HEIGHT = 300,
             MARGINS = {
                 top: 20,
                 right: 20,
-                bottom: 60,
+                bottom: 20,
                 left: 80
             },
 			xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0, 1.0]),
 			//xScale = d3.time.scale().range([MARGINS.left, WIDTH - MARGINS.right]),
-            yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.05, 0.4]),
+            yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.0, 0.4]),
             xAxis = d3.svg.axis()
 					  .scale(xScale),
                       //.tickFormat(d3.time.format("%H:%m")),
@@ -198,7 +198,7 @@
 		//Create X axis label   
 		vis.append("svg:text")
 		.attr("x", WIDTH / 2 )
-        .attr("y",  HEIGHT )
+        .attr("y",  HEIGHT+20 )
         .style("text-anchor", "middle")
         .text("Time");
     
@@ -211,7 +211,7 @@
         .style("text-anchor", "middle")
         .text("Distance"); 
         
-		var lineGenOutlier = d3.svg.line()
+		var lineGen = d3.svg.line()
 							   .x(function(d) {
 								   var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
                                    var startTime= new Date(d.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
@@ -220,7 +220,7 @@
                                    return xScale((ts - startTime)/(endTime-startTime));
 							   })
 							   .y(function(d) {
-									return yScale(Math.abs(+d.LatitudePonto - selectedOutlier.LatitudePonto ) + Math.abs(+d.LongitudePonto - selectedOutlier.LongitudePonto ));
+									return yScale(Math.abs(+d.LatitudePonto - selectedOutlier.LatStart ) + Math.abs(+d.LongitudePonto - selectedOutlier.LongStart ));
 							   })
 							   .interpolate("basis");
         
@@ -357,7 +357,9 @@
 							    var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatEnd,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongEnd, 2), 0.5);
 							    if (dist < MAX_DIST){
                                     //put condition here to get only buses that folow the same direction of the outlier
-							        selectedBuses2[raw_data[idx][3]] = [selectedBuses[raw_data[idx][3]], raw_data[idx][11]]; //put end timestamp along with start timestamp 
+                                    if (!(raw_data[idx][3] in selectedBuses2)){
+							            selectedBuses2[raw_data[idx][3]] = [selectedBuses[raw_data[idx][3]], raw_data[idx][11]]; //put end timestamp along with start timestamp 
+                                    }
 							    }
                             }
 						}
@@ -416,7 +418,7 @@
 					//add to the temporal chart
 					for (var key in data2) {
 						vis.append('svg:path')
-						   .attr('d', lineGenOutlier(data2[key]))
+						   .attr('d', lineGen(data2[key]))
 						   .attr('stroke', 'blue')
 						   .attr('stroke-width', 1)
 						   .attr("class", "line")
@@ -832,7 +834,7 @@
           		//add to the temporal chart
                 for (key in outlier_data_by_bus2){
                     vis.append('svg:path')
-                      .attr('d', lineGenOutlier(outlier_data_by_bus2[key]))
+                      .attr('d', lineGen(outlier_data_by_bus2[key]))
                       .attr('stroke', 'red')
                       .attr('stroke-width', 3)
                       .attr("class", "line")
@@ -974,11 +976,9 @@
             else if (this.cursor.x > rect2x-10 && this.cursor.x < rect2x+10  && this.cursor.z==1){
                 selrect = 2;
             }
-            
-            //if the rectangles are too close, space them
-            if (rect2x-rect1x<40){
-                rect1x = Math.max(10,rect2x-40);
-            }
+            //else if (this.cursor.x > rect1x+10 && this.cursor.x < rect2x-10  && this.cursor.z==1){
+            //    selrect = 3;
+            //}
             
             if ( this.cursor.z==0 ){
                 selrect = -1;
@@ -990,6 +990,17 @@
             else if (selrect==2){
                 rect2x = Math.min(canvas.width-10,this.cursor.x);
             }
+            //else if (selrect==3){
+            //    var range = rect2x-rect1x;
+            //    rect1x = Math.max(10,this.cursor.x-(range/2));
+            //    rect2x = Math.min(canvas.width-10,this.cursor.x+(range/2));
+            //}
+            
+            //if the rectangles are too close, put them apart
+            if (rect2x-rect1x<40){
+                rect2x = Math.min(canvas.width-10,rect1x+40);
+            }
+            
             //draw rectangle 1 and 2
             g.fillStyle="black";
             g.fillRect(rect1x-10,0,20,this.height);
