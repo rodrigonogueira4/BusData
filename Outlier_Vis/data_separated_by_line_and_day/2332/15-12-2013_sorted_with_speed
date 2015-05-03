@@ -1,0 +1,4 @@
+ID,NomePonto,Linha,Onibus,Hora,DiaMes,Mes,Ano,Velocidade,LatitudePonto,LongitudePonto,TimeStamp,DescricaoPonto,Speed
+125916025,2332 - D86768,2332,D86768,0,15,12,2013,0,-22.894083,-43.532707,2013-12-15 00:23:32.16 UTC,Data/Hora - 15/12/2013 00:55:13<br /><br /> Velocidade: 0 Km/h,0.00122809028033
+125924536,2332 - D86768,2332,D86768,0,15,12,2013,0,-22.894083,-43.532707,2013-12-15 00:27:32.76 UTC,Data/Hora - 15/12/2013 00:55:13<br /><br /> Velocidade: 0 Km/h,0.0
+125921043,2332 - D86723,2332,D86723,0,15,12,2013,0,-22.894323,-43.532585,2013-12-15 00:27:32.76 UTC,Data/Hora - 15/12/2013 00:55:57<br /><br /> Velocidade: 0 Km/h,0.0
