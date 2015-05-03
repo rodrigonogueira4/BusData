@@ -148,7 +148,7 @@
 		var maxPts = 2000;
 		var outliersfile = "5_12.csv";
 		var outliersperdayfile = "number_of_outliers_per_day.csv";
-		var dateFile = "5-12-2013";
+		var dateFile = "5-12-2013_sorted_with_speed";
 		var startHour;
 		var startMinute;
 		var endHour;
@@ -651,7 +651,7 @@
 									d3.select(this).classed("vselected", true);
 									d3.select(this).style({fill: 'red'});
                   fields = d.key.split("/");
-									dateFile = fields[1] + "-" + fields[0] + "-2013";
+									dateFile = fields[1] + "-" + fields[0] + "-2013_sorted_with_speed";
                   outliersfile = fields[1] + "_" + fields[0] + ".csv";
 									loadLstboxFromOutliers();
                    
@@ -671,7 +671,7 @@
 					.text(function(d) { return d.key; })
 					.on("click", function(d, i) {
                   fields = d.key.split("/");
-									dateFile = fields[1] + "-" + fields[0] +  "-2013";
+									dateFile = fields[1] + "-" + fields[0] +  "-2013_sorted_with_speed";
                   outliersfile = fields[1] + "_" + fields[0] + ".csv";
 									loadLstboxFromOutliers();
 								 });
@@ -685,7 +685,7 @@
 					.text(function(d) { return d.number_of_outliers; })
 					.on("click", function(d, i) {
                   fields = d.key.split("/");
-									dateFile = fields[1] + "-" + fields[0] + "-2013";
+									dateFile = fields[1] + "-" + fields[0] + "-2013_sorted_with_speed";
                   outliersfile = fields[1] + "_" + fields[0] + ".csv";
 									loadLstboxFromOutliers();
 								 });
