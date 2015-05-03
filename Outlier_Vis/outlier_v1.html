@@ -74,10 +74,15 @@
 			text-anchor: end;
 		}
 		
+		.sortLineBarChartDiv {
+			position: fixed;
+			left: 0px;
+		}
+		
 		.barchartDiv {
 			float: left;
 			overflow-y: scroll;
-			height: 700px;
+			height: 680px;
 			width: 300px;
 		}
 		
@@ -119,6 +124,7 @@
         <br><br>
         
 		<div style="width: 100%; height: 700px; overflow: hidden;">
+			<div id="sortLineBarChartDiv"><input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()">Sort by # of Outliers</input></div>
 			<div class="barchartDiv">
 				<svg class="barchart"></svg>
 			</div>
@@ -148,6 +154,7 @@
 		var endHour;
 		var endMinute;
 		var selectedOutlier;
+		var sortLineBarChartByNumberOfOutliers = false;
 		var MAX_DIST = (0.003); //maximum distance to 2 pts be considered close. 1 degree latitude = 100km. 1 meter = 0.00001 degrees. 100 meters = 0.001
 		var RIO_CENTER_LAT = -22.911773;
 		var RIO_CENTER_LONG = -43.230199;
@@ -539,7 +546,8 @@
 						});*/
             
             //if ($('#ConnectedPts').is(':checked') && (selectedLines[0] != "All")){
-            if (selectedLines[0] != "All"){
+            //if (selectedLines[0] != "All"){
+			if (selectedLines.length == 0) {
                 //remove all lines
                 $(".marker2").remove();
                 var marker = outlier_data_layer.selectAll("svg2")
@@ -697,13 +705,15 @@
 			d3.csv(outliersfile, function(data) {
 				data = data.filter(function(row,index) {
 					var contains = false;
+					if (selectedLines.length == 0)
+						contains = true;
 					for (i in selectedLines) {
 						if (row['Linha'] == selectedLines[i]) {
 							contains = true;
 						}
-						if (selectedLines[i] == "All") {
-							contains = true;
-						}
+						//if (selectedLines[i] == "All") {
+						//	contains = true;
+						//}
 					}
 					
 					return contains;
@@ -849,13 +859,47 @@
 				overlay_outliers.setMap(map);
 			});
 		}
-	 
+		
+		function sortByNumberOfOutliers(a, b) 
+		{
+			if (a.number_of_outliers < b.number_of_outliers)
+				return 1;
+			if (a.number_of_outliers > b.number_of_outliers)
+				return -1;
+			
+			return 0;
+		}
+		
+		function sortByLabel(a, b)
+		{
+			var temp_a = Number(a.key);
+			var temp_b = Number(b.key);
+			
+			if (temp_a < temp_b)
+				return -1;
+			if (temp_a > temp_b)
+				return 1;
+			
+			return 0;
+		}
+	
+		function changeSortLineBarChart()
+		{
+			if (sortLineBarChartByNumberOfOutliers)
+				sortLineBarChartByNumberOfOutliers = false;
+			else
+				sortLineBarChartByNumberOfOutliers = true;
+			
+			loadLstboxFromOutliers();
+		}
+	
 		function loadLstboxFromOutliers() {
             //first, remove all existing bars in the bar chart
             d3.select(".barchart").selectAll("g").remove();
             
             //select all outliers for the selected day
-            selectedLines = ["All"];
+            //selectedLines = ["All"];
+			selectedLines = [];
             loadPts();
             
 			d3.csv(outliersfile, function(data) {
@@ -881,6 +925,11 @@
 					if (Object.keys(lines_outliers[line]).length > max)
 						max = Object.keys(lines_outliers[line]).length;
 				}
+				
+				if (sortLineBarChartByNumberOfOutliers)
+					barchart_data.sort(sortByNumberOfOutliers);
+				else
+					barchart_data.sort(sortByLabel);
                 
 				//add "All"
 				var width = 280,//420
