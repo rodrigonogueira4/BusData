@@ -307,12 +307,11 @@
 			overlay_raw.setMap(null);
 			raw_data = null;
 			raw_data_load_callback_count = selectedLines.length;
-
+			
 			for (i=0; i < selectedLines.length; i++) {
 				d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/" + dateFile, function(text) {
-
 					raw_data = d3.csv.parseRows(text);
-					
+					raw_data.shift();
 					//do sampling
 					var samplingRate = Math.floor(raw_data.length/maxPts);
 					if (samplingRate < 1) {
@@ -450,6 +449,7 @@
 			raw_data_load_callback_count = raw_data_load_callback_count - 1;
 			if (raw_data_load_callback_count == 0)
 				overlay_raw.setMap(map);
+			
 			
 			bounds = new google.maps.LatLngBounds();
 			bounds.extend(new google.maps.LatLng(+max_latitude_bounding, +max_longitude_bounding));
