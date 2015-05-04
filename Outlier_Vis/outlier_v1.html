@@ -142,6 +142,12 @@
 				<svg id="visualisation" width="1000" height="350"></svg>
 			</div>
 		</div>
+    <div class="container">
+			<div class="jumbotron">
+				<svg id="speedVisualisation" width="1000" height="350"></svg>
+			</div>
+		</div>
+
 	</body>
 
 	<script type="text/javascript">
@@ -174,7 +180,72 @@
     
 	<script type="text/javascript">
     
-		var vis = d3.select("#visualisation"),
+    //Speed Chart
+    var speedVis = d3.select("#speedVisualisation"),
+            WIDTH = 1000,
+            HEIGHT = 300,
+            MARGINS = {
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: 80
+            },
+			xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0, 1.0]),
+			yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.0, 0.4]),
+      xAxis = d3.svg.axis().scale(xScale),
+     	yAxis = d3.svg.axis()
+					  .scale(yScale)
+					  .orient("left");
+    
+    //Create axes
+    speedVis.append("svg:g")
+		   .attr("class","axis")
+		   .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+		   .call(xAxis);
+		speedVis.append("svg:g")
+		   .attr("class","axis")
+       .attr("transform", "translate(" + (MARGINS.left) + ", " + (0) + ")")
+       .call(yAxis);
+    
+ 
+		//Create X label for speed chart   
+		speedVis.append("svg:text")
+		    .attr("x", WIDTH / 2 )
+        .attr("y",  HEIGHT + 20)
+        .style("text-anchor", "middle")
+        .text("Time");
+    
+    //Create Y label for speed chart
+    speedVis.append("svg:text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 10)
+        .attr("x", 0 - (HEIGHT/2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Speed"); 
+        
+		var speedLineGen = d3.svg.line()
+							   .x(function(d) {
+								   var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var startTime= new Date(d.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var endTime = new Date(d.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var startTimeOutlier= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var endTimeOutlier = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   //return xScale(d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"))
+                                   var diff= (endTime-startTime)/(endTimeOutlier-startTimeOutlier);
+                                   normval = (ts - startTime)/(endTime-startTime)
+                                   return xScale(normval*diff);
+							   })
+							   .y(function(d) {
+              		return yScale(d.Speed);
+							   })
+							   .interpolate("basis");
+                  
+
+
+
+    //Temporal Chart
+    var vis = d3.select("#visualisation"),
             WIDTH = 1000,
             HEIGHT = 300,
             MARGINS = {
@@ -201,7 +272,7 @@
 		   .attr("class","axis")
            .attr("transform", "translate(" + (MARGINS.left) + ", " + (0) + ")")
            .call(yAxis);
-        
+    
 		//Create X axis label   
 		vis.append("svg:text")
 		.attr("x", WIDTH / 2 )
@@ -234,7 +305,7 @@
 									return yScale(Math.abs(+d.LatitudePonto - selectedOutlier.LatStart ) + Math.abs(+d.LongitudePonto - selectedOutlier.LongStart ));
 							   })
 							   .interpolate("basis");
-        
+
 	    //MOD THIS
         //xScale.domain(d3.extent(data, function(d) { return d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"); }));
         //xScale.domain([d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 09:36:03"),d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 11:36:03")]);
@@ -242,6 +313,8 @@
 		function parseDate(datestr) {
 			return Date.parse(datestr.substring(0, 19).replace(" ", "T"));
 		}
+
+
 		// Create the Google Map
         var stylez = [
             {
@@ -419,6 +492,7 @@
                                     TimeStampEnd: selectedBuses2[raw_data[idx][3]][1],
                                     LatitudePonto: raw_data[idx][9],
                                     LongitudePonto: raw_data[idx][10],
+                                    Speed: raw_data[idx][13]
                                    }
                             
 							data2[raw_data[idx][3]].push(item);
@@ -434,8 +508,18 @@
 						   .attr("class", "line")
 						   .attr('fill', 'none');
 					}
-                    
-                    raw_data_load_callback();
+          
+          //add to the temporal chart
+					for (var key in data2) {
+						speedVis.append('svg:path')
+						   .attr('d', speedLineGen(data2[key]))
+						   .attr('stroke', 'blue')
+						   .attr('stroke-width', 1)
+						   .attr("class", "line")
+						   .attr('fill', 'none');
+					}
+          
+           raw_data_load_callback();
 					//var overlay_raw = new google.maps.OverlayView();
 					// Add the container when the overlay is added to the map.
 					// Bind our overlay to the map…
@@ -754,6 +838,7 @@
                              TimeStampPrevious: TimeStampPrevious,
 							LatitudePontoPrevious:LatPrevious,
 							LongitudePontoPrevious:LongPrevious,
+              Speed:data[row]['Speed_'+i],
 							row:row,
 							BusId:data[row]["Onibus"],
 							Line:data[row]["Linha"]
@@ -850,6 +935,16 @@
                 for (key in outlier_data_by_bus2){
                     vis.append('svg:path')
                       .attr('d', lineGen(outlier_data_by_bus2[key]))
+                      .attr('stroke', 'red')
+                      .attr('stroke-width', 3)
+                      .attr("class", "line")
+                      .attr('fill', 'none');
+                }
+
+               //add to the speed chart
+                for (key in outlier_data_by_bus2){
+                    speedVis.append('svg:path')
+                      .attr('d', speedLineGen(outlier_data_by_bus2[key]))
                       .attr('stroke', 'red')
                       .attr('stroke-width', 3)
                       .attr("class", "line")
