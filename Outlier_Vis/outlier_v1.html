@@ -534,6 +534,7 @@
 			if (raw_data_load_callback_count == 0)
 				overlay_raw.setMap(map);
 			
+			//console.log("aqui");
 			
 			bounds = new google.maps.LatLngBounds();
 			bounds.extend(new google.maps.LatLng(+max_latitude_bounding, +max_longitude_bounding));
@@ -952,6 +953,8 @@
                 }
                 
 				overlay_outliers.setMap(map);
+				loadPtsRaw();
+				//console.log("teste");
 			});
 		}
 		
@@ -1104,7 +1107,7 @@
 			document.getElementById("valueTimeRange").innerHTML = format2digits(rangeHour) + ":" + format2digits(rangeMinute);*/
 
 			loadPtsOutliers();
-			loadPtsRaw();	  
+			//loadPtsRaw();
 		}
         
         //force reset of slide bars
