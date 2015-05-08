@@ -124,7 +124,8 @@
         <br><br>
         
 		<div style="width: 100%; height: 700px; overflow: hidden;">
-			<div id="sortLineBarChartDiv"><input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()">Sort by # of Outliers</input></div>
+            <div id="sortLineBarChartDiv"><button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort</button></div>
+			<!--<div id="sortLineBarChartDiv"><input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()">Sort by # of Outliers</input></div>-->
 			<div class="barchartDiv">
 				<svg class="barchart"></svg>
 			</div>
@@ -288,6 +289,18 @@
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text("Distance"); 
+
+        var lineGenOutlier = d3.svg.line()
+							   .x(function(d) {
+								   var ts = new Date(d.TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var startTime= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   var endTime = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
+                                   return xScale((ts - startTime)/(endTime-startTime));
+							   })
+							   .y(function(d) {
+									return yScale(Math.abs(+d.LatitudePonto - selectedOutlier.LatStart ) + Math.abs(+d.LongitudePonto - selectedOutlier.LongStart ));
+							   })
+							   .interpolate("basis");
         
 		var lineGen = d3.svg.line()
 							   .x(function(d) {
@@ -298,7 +311,7 @@
                                    var endTimeOutlier = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
                                    //return xScale(d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"))
                                    var diff= (endTime-startTime)/(endTimeOutlier-startTimeOutlier);
-                                   normval = (ts - startTime)/(endTime-startTime)
+                                   normval = (ts - startTime)/(endTime-startTime);
                                    return xScale(normval*diff);
 							   })
 							   .y(function(d) {
@@ -428,7 +441,7 @@
                         //select buses based on start latlong
 						selectedBuses = {}
 						for (idx in raw_data){
-							var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatStart,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongStart, 2), 0.5);
+							var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatStart,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongStart, 2),0.5);
 							if (dist < MAX_DIST){
 								selectedBuses[raw_data[idx][3]] = raw_data[idx][11]; //put start timestamp here 
 							}
@@ -437,7 +450,7 @@
                         selectedBuses2 = {}
                         for (idx in raw_data){
                             if (raw_data[idx][3] in selectedBuses) {
-							    var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatEnd,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongEnd, 2), 0.5);
+							   var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatEnd,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongEnd, 2), 0.5);
 							    if (dist < MAX_DIST){
                                     //put condition here to get only buses that folow the same direction of the outlier
                                     if (!(raw_data[idx][3] in selectedBuses2)){
@@ -630,8 +643,6 @@
 								return "";
 						});*/
             
-            //if ($('#ConnectedPts').is(':checked') && (selectedLines[0] != "All")){
-            //if (selectedLines[0] != "All"){
 			if (selectedLines.length != 0) {
                 //remove all lines
                 $(".marker2").remove();
@@ -796,9 +807,6 @@
 						if (row['Linha'] == selectedLines[i]) {
 							contains = true;
 						}
-						//if (selectedLines[i] == "All") {
-						//	contains = true;
-						//}
 					}
 					
 					return contains;
@@ -806,6 +814,7 @@
 				outlier_data = [];
 				var lines_outliers = {};  
 				k = 0;
+                
 				//pts must be structured as rows
 				for (row in data) {
 					var minreftime = parseDate(data[row]['TimeStamp_19']); 
@@ -813,7 +822,7 @@
                     //console.log("starttime: " + data[row]['TimeStamp_19']);
                     //console.log("endtime: " + data[row]['TimeStamp_0']);
                     
-					for (i = 0; i<20; i++){
+					for (i = 19; i>=0; i--){
 						var timestamp = parseDate(data[row]['TimeStamp_' + i]);
                       
                         if (i>=1){
@@ -893,7 +902,7 @@
 				});
                 
                 selectedOutlier = outlier_data[0]; //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
-                
+
                 //remove duplicated outliers
                 var startTimeAbs = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
                 var endTimeAbs = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
@@ -910,6 +919,7 @@
                               if (!(outlier_data[row]["BusId"] in outlier_data_by_bus2)){
                                   outlier_data_by_bus2[outlier_data[row]["BusId"]] = [];
                               }
+                              console.log(outlier_data[row]["TimeStamp"]);
                               outlier_data_by_bus2[outlier_data[row]["BusId"]].push(outlier_data[row]);
 
                               //update start and end dates of the selected outlier    
@@ -931,11 +941,12 @@
                         }
                     }    
 				}
-         
+                console.log("outlier_data_by_bus2:");
+                console.log(outlier_data_by_bus2);         
           		//add to the temporal chart
                 for (key in outlier_data_by_bus2){
                     vis.append('svg:path')
-                      .attr('d', lineGen(outlier_data_by_bus2[key]))
+                      .attr('d', lineGenOutlier(outlier_data_by_bus2[key]))
                       .attr('stroke', 'red')
                       .attr('stroke-width', 3)
                       .attr("class", "line")
@@ -983,11 +994,14 @@
 	
 		function changeSortLineBarChart()
 		{
-			if (sortLineBarChartByNumberOfOutliers)
+            
+			if (sortLineBarChartByNumberOfOutliers){
 				sortLineBarChartByNumberOfOutliers = false;
-			else
+                $("#btnSort").html('Sort');
+            }else{
 				sortLineBarChartByNumberOfOutliers = true;
-			
+                $("#btnSort").html('Unsort');
+            }
 			loadLstboxFromOutliers();
 		}
 	
