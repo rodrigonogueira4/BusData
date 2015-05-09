@@ -111,7 +111,16 @@
 			font-family: Lato;
 			font-size: 13px;
 		}
-
+		
+		#sortLineBarChartDiv {
+		}
+		
+		#busesOfLine {
+			float: left;
+			overflow-x: scroll;
+			height: 40px;
+		}
+		
 	</style>
 	</head>
 	<body>
@@ -125,6 +134,7 @@
         
 		<div style="width: 100%; height: 700px; overflow: hidden;">
             <div id="sortLineBarChartDiv"><button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort</button></div>
+			<div id="busesOfLine"></div>
 			<!--<div id="sortLineBarChartDiv"><input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()">Sort by # of Outliers</input></div>-->
 			<div class="barchartDiv">
 				<svg class="barchart"></svg>
@@ -165,6 +175,8 @@
 		var MAX_DIST = (0.003); //maximum distance to 2 pts be considered close. 1 degree latitude = 100km. 1 meter = 0.00001 degrees. 100 meters = 0.001
 		var RIO_CENTER_LAT = -22.911773;
 		var RIO_CENTER_LONG = -43.230199;
+		var listOfOutlierBuses = [];
+		var listOfSelectedBuses = [];
 		var overlay_outliers = new google.maps.OverlayView();
 		var outlier_data;
 		var outlier_data_layer;
@@ -339,9 +351,16 @@
               featureType: "all",
               elementType: "all",
               stylers: [
-                { saturation: -100 } // <-- THIS SETS TO GRAYSCALE
+                { saturation: -100 }, // <-- THIS SETS TO GRAYSCALE
+				{ visibility: "off" }
               ]
-            }
+            },
+			{
+				featureType: "road",
+				stylers: [
+					{ visibility: "on" }
+				]
+			}
         ];
 
         var mapOptions = {
@@ -364,6 +383,7 @@
 			// Draw each marker as a separate SVG element.
 			// We could use a single SVG, but what size would it have?
 		};
+		var raw_markers = [];
 		overlay_raw.draw = function() {
 			var projection = this.getProjection(),
 			padding = 10;
@@ -376,7 +396,8 @@
 							  .attr("class", "marker");
 
 			// Add a circle.
-			marker.append("svg:circle")
+			raw_markers.push(marker.append("svg:circle"));
+			raw_markers[raw_markers.length - 1]
 				  .attr("r", 3.0)
 				  .attr("cx", padding)
 				  .attr("cy", padding);
@@ -392,6 +413,7 @@
 		};
 		overlay_raw.onRemove = function() {
 			$(".rawpt").remove();
+			raw_markers = [];
 		};
         
 		function loadPtsRaw(plotTemporalChart) {
@@ -439,7 +461,92 @@
 						
 						return true;
 					});   
-	
+					var listOfBuses = []
+					
+					raw_data.filter(function(row,index) {	
+						if (listOfBuses.indexOf(row[3]) == -1)
+							listOfBuses.push(row[3]);
+					});
+					
+					var div_list = document.getElementById("busesOfLine");
+					div_list.innerHTML = "";
+					
+					listOfSelectedBuses = [];
+					
+					for (var i=0; i<listOfBuses.length; i++)
+					{
+						var div = document.createElement("div");
+						
+						div.innerHTML = listOfBuses[i];
+						div.style.color = "white";
+						div.style.float = "left";
+						div.style.border = "2px solid #000000";
+						div.style.marginLeft = "1px";
+						div.style.marginRight = "1px";
+						if (listOfOutlierBuses.indexOf(listOfBuses[i]) != -1)
+						{
+							div.style.background = "red";
+							div.className = "busOutlierDiv";
+							//listOfBuses[i] = "*****" + listOfBuses[i];
+						}
+						else
+						{
+							div.style.background = "blue";
+							div.className = "busDiv";
+						}
+						
+						div_list.appendChild(div);
+					}
+					
+					$(".busDiv").hover(function() {
+						$(this).css("background", "green");
+					});
+
+					$(".busOutlierDiv").hover(function() {
+						$(this).css("background", "green");
+					});
+					
+					$(".busDiv").mouseout(function() {
+						$(this).css("background", "blue");
+					});
+
+					$(".busOutlierDiv").mouseout(function() {
+						$(this).css("background", "red");
+					});
+					
+					$(".busOutlierDiv").click(function() {
+						listOfSelectedBuses = [$(this).html()];
+						//$(".rawpt circle").css("fill", "black");
+						for (var j=0; j<raw_markers.length; j++)
+							raw_markers[j].each(transform);
+						for (var i=0; i<outlier_markers.length; i++)
+							outlier_markers[i].each(transform2);
+						function transform(d) {
+							if (listOfSelectedBuses.indexOf(d.value[3]) != -1)
+							{
+								//console.log("a");
+								return d3.select(this).style("opacity", 1.0);
+							}
+							else
+							{
+								//console.log("b");
+								return d3.select(this).style("opacity", 0.0);
+							}
+						}
+						function transform2(d) {
+							if (listOfSelectedBuses.indexOf(d.value["BusId"]) != -1)
+							{
+								//console.log("a");
+								return d3.select(this).style("opacity", 1.0);
+							}
+							else
+							{
+								//console.log("b");
+								return d3.select(this).style("opacity", 0.0);
+							}
+						}
+					});
+
           
 					//select buses for temporal chart comparison. Select buses that are close to the start point of the outlier
 					
@@ -598,6 +705,9 @@
 			outlier_data_layer = d3.select(this.getPanes().overlayMouseTarget).append("div")
 																 .attr("class", "outliers");
 		};
+
+		var outlier_markers = [];
+
 		overlay_outliers.draw = function() {
 			var projection = this.getProjection(),
 			padding = 10;
@@ -633,7 +743,8 @@
 										   .attr("class", "marker");
 
 			// Add a circle.
-			marker.append("svg:circle")
+			outlier_markers.push(marker.append("svg:circle"));
+			outlier_markers[outlier_markers.length - 1]
 				  //.attr("r", function(d) { return (3.0 + 5.0 * d.value['TimeStampPercentage']) })
 				  .attr("r", 4.0)
 				  .attr("cx", padding)
@@ -669,7 +780,7 @@
 								return "";
 						});*/
             
-			if (selectedLines.length != 0) {
+			/*if (selectedLines.length != 0) {
                 //remove all lines
                 $(".marker2").remove();
                 var marker = outlier_data_layer.selectAll("svg2")
@@ -734,11 +845,12 @@
                                                          return d2.y - Math.min(d1.y,d2.y);
                                                      }
                                                   });
-            }
+            }*/
 		};
     
 		overlay_outliers.onRemove = function() {
 			$(".outliers").remove();
+			outlier_markers = [];
 		};
 
 		function loadOutliersPerDay() {
@@ -926,6 +1038,15 @@
 					}
 					return true;
 				});
+				
+				listOfOutlierBuses = []
+					
+				outlier_data.filter(function(row,index) {
+					//console.log(row);
+					if (listOfOutlierBuses.indexOf(row["BusId"]) == -1)
+						listOfOutlierBuses.push(row["BusId"]);
+				});
+				
                 if(busID == "") {
                   //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
                   selectedOutlier = outlier_data[0];
