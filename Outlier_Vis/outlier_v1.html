@@ -442,7 +442,9 @@
 						selectedBuses = {}
 						for (idx in raw_data){
 							var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatStart,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongStart, 2),0.5);
+                            
 							if (dist < MAX_DIST){
+                                
 								selectedBuses[raw_data[idx][3]] = raw_data[idx][11]; //put start timestamp here 
 							}
 						}
@@ -452,17 +454,26 @@
                             if (raw_data[idx][3] in selectedBuses) {
 							   var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatEnd,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongEnd, 2), 0.5);
 							    if (dist < MAX_DIST){
-                                    //put condition here to get only buses that folow the same direction of the outlier
+                                    //only select as an end timestamp if it larger than start timestamp
+                                    var startTime = new Date(selectedBuses[raw_data[idx][3]].substring(0, 19).replace(" ", "T") + "+0000");
+						            var ts = new Date(raw_data[idx][11].substring(0, 19).replace(" ", "T") + "+0000");
+                                    if(+startTime.getUTCHours() > +ts.getUTCHours()) {
+                                        continue;
+                                    }
+                                    else if (+startTime.getUTCHours() == +ts.getUTCHours()) {
+                                        if (+startTime.getUTCMinutes() > +ts.getUTCMinutes()) {
+                                            continue;
+                                        }
+                                    }
                                     if (!(raw_data[idx][3] in selectedBuses2)){
 							            selectedBuses2[raw_data[idx][3]] = [selectedBuses[raw_data[idx][3]], raw_data[idx][11]]; //put end timestamp along with start timestamp 
                                     }
 							    }
                             }
 						}
-                        
+                        console.log(selectedBuses2);
 						//filter by start date and end date of the bus
 						data2 = {}; 
-
 						for (idx in raw_data) {
 							if (min_latitude_bounding == null || min_latitude_bounding > raw_data[idx][9])
 								min_latitude_bounding = raw_data[idx][9];
@@ -522,7 +533,7 @@
 						   .attr('fill', 'none');
 					}
           
-          //add to the temporal chart
+                     //add to the speed chart
 					for (var key in data2) {
 						speedVis.append('svg:path')
 						   .attr('d', speedLineGen(data2[key]))
@@ -919,7 +930,6 @@
                               if (!(outlier_data[row]["BusId"] in outlier_data_by_bus2)){
                                   outlier_data_by_bus2[outlier_data[row]["BusId"]] = [];
                               }
-                              console.log(outlier_data[row]["TimeStamp"]);
                               outlier_data_by_bus2[outlier_data[row]["BusId"]].push(outlier_data[row]);
 
                               //update start and end dates of the selected outlier    
@@ -940,9 +950,7 @@
                               }
                         }
                     }    
-				}
-                console.log("outlier_data_by_bus2:");
-                console.log(outlier_data_by_bus2);         
+				}        
           		//add to the temporal chart
                 for (key in outlier_data_by_bus2){
                     vis.append('svg:path')
