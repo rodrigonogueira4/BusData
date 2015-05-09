@@ -140,12 +140,12 @@
 		</div>
 		<div class="container">
 			<div class="jumbotron">
-				<svg id="visualisation" width="1000" height="350"></svg>
+				<svg id="visualization" width="1000" height="350"></svg>
 			</div>
 		</div>
 <!--     <div class="container"> -->
 <!-- 			<div class="jumbotron"> -->
-<!-- 				<svg id="speedVisualisation" width="1000" height="350"></svg> -->
+<!-- 				<svg id="speedVisualization" width="1000" height="350"></svg> -->
 <!-- 			</div> -->
 <!-- 		</div> -->
 
@@ -182,7 +182,7 @@
 	<script type="text/javascript">
     
     //Speed Chart
-    var speedVis = d3.select("#speedVisualisation"),
+    var speedVis = d3.select("#speedVisualization"),
             WIDTH = 1000,
             HEIGHT = 300,
             MARGINS = {
@@ -246,7 +246,7 @@
 
 
     //Temporal Chart
-    var vis = d3.select("#visualisation"),
+    var vis = d3.select("#visualization"),
             WIDTH = 1000,
             HEIGHT = 300,
             MARGINS = {
@@ -310,8 +310,13 @@
                                    var startTimeOutlier= new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
                                    var endTimeOutlier = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
                                    //return xScale(d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"))
+                                   
                                    var diff= (endTime-startTime)/(endTimeOutlier-startTimeOutlier);
-                                   normval = (ts - startTime)/(endTime-startTime);
+                                   if(endTime-startTime == 0) {
+                                     return xScale(diff*((ts - startTime)/0.01));
+                                   }
+
+                                   normval = (ts - startTime)/(endTime-startTime);                                   
                                    return xScale(normval*diff);
 							   })
 							   .y(function(d) {
@@ -389,7 +394,7 @@
 			$(".rawpt").remove();
 		};
         
-		function loadPtsRaw() {
+		function loadPtsRaw(plotTemporalChart) {
 			overlay_raw.setMap(null);
 			raw_data = null;
 			raw_data_load_callback_count = selectedLines.length;
@@ -435,16 +440,16 @@
 						return true;
 					});   
 	
+          
 					//select buses for temporal chart comparison. Select buses that are close to the start point of the outlier
-					if (selectedOutlier != null)
+					
+          if (selectedOutlier != null)
 					{
                         //select buses based on start latlong
-						selectedBuses = {}
+					  selectedBuses = {}
 						for (idx in raw_data){
 							var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatStart,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongStart, 2),0.5);
-                            
-							if (dist < MAX_DIST){
-                                
+              if (dist < MAX_DIST){                
 								selectedBuses[raw_data[idx][3]] = raw_data[idx][11]; //put start timestamp here 
 							}
 						}
@@ -471,8 +476,7 @@
 							    }
                             }
 						}
-                        console.log(selectedBuses2);
-						//filter by start date and end date of the bus
+            //filter by start date and end date of the bus
 						data2 = {}; 
 						for (idx in raw_data) {
 							if (min_latitude_bounding == null || min_latitude_bounding > raw_data[idx][9])
@@ -523,15 +527,19 @@
 						}
 					}
 
-					//add to the temporal chart
-					for (var key in data2) {
-						vis.append('svg:path')
+          if(plotTemporalChart) {
+					  //add to the temporal chart
+            
+				  	for (var key in data2) {
+              
+					  	vis.append('svg:path')
 						   .attr('d', lineGen(data2[key]))
 						   .attr('stroke', 'blue')
 						   .attr('stroke-width', 1)
 						   .attr("class", "line")
 						   .attr('fill', 'none');
-					}
+					  }
+          }
           
                      //add to the speed chart
 					for (var key in data2) {
@@ -598,8 +606,8 @@
 							.append("div")
 							.style("position", "absolute")
 							.style("z-index", "10")
-							.style("visibility", "hidden")
-							.text("a simple tooltip");
+							.style("visibility", "hidden");
+							//.text("a simple tooltip");
             
             var marker = outlier_data_layer.selectAll("svg")
 										   .data(d3.entries(outlier_data))
@@ -632,6 +640,13 @@
 				  .attr("cy", padding)
 				  .on("click", function(d, i) {
 					  tooltip.style("visibility", "visible");
+            //when clicking on an outlier, it will be plotted on the temporal chart
+            
+            //remove all existing lines in the temporal chart
+			      vis.selectAll("path.line").remove();
+            loadPtsOutliers(true, d.value['BusId']);
+            loadPtsRaw(true);
+     
                       alert("Selected node:\n" +
                             "Start: " + d.value['TimeStampStart'] + "\n"+
                             "End:   " + d.value['TimeStampEnd'] + "\n"+
@@ -800,7 +815,7 @@
 			});
 		}
 			
-		function loadPtsOutliers() {
+		function loadPtsOutliers(plotTemporalChart, busID) {
 			overlay_outliers.setMap(null);
 			outlier_data = null;
 			
@@ -815,9 +830,9 @@
 					if (selectedLines.length == 0)
 						contains = true;
 					for (i in selectedLines) {
-						if (row['Linha'] == selectedLines[i]) {
-							contains = true;
-						}
+            if(row['Linha'] == selectedLines[i]) {
+              contains = true;
+            }
 					}
 					
 					return contains;
@@ -911,9 +926,18 @@
 					}
 					return true;
 				});
-                
-                selectedOutlier = outlier_data[0]; //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
-
+                if(busID == "") {
+                  //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
+                  selectedOutlier = outlier_data[0];
+                } else{
+                  for(row in outlier_data) {
+                    if (outlier_data[row]["BusId"] == busID){
+                      selectedOutlier = outlier_data[row];
+                      break;
+                    }
+                  }
+                }
+                 
                 //remove duplicated outliers
                 var startTimeAbs = new Date(selectedOutlier.TimeStampStart.substring(0, 19).replace(" ", "T")+ "+0000");
                 var endTimeAbs = new Date(selectedOutlier.TimeStampEnd.substring(0, 19).replace(" ", "T")+ "+0000");
@@ -923,7 +947,6 @@
                 outlier_data_by_bus2 = {};
                 
                 for (row in outlier_data) {
-                    //temporary: select pts only for the selected outlier 
                     if (outlier_data[row]["BusId"] == selectedOutlier["BusId"]){
                         if (!((outlier_data[row]["BusId"]+outlier_data[row]["TimeStamp"]) in outlier_data_by_bus)){
                               outlier_data_by_bus[outlier_data[row]["BusId"]+outlier_data[row]["TimeStamp"]] = 1;
@@ -950,8 +973,11 @@
                               }
                         }
                     }    
-				}        
-          		//add to the temporal chart
+				        }
+        
+              if(plotTemporalChart) {
+          		  //add to the temporal chart
+                //console.log(outlier_data_by_bus2);
                 for (key in outlier_data_by_bus2){
                     vis.append('svg:path')
                       .attr('d', lineGenOutlier(outlier_data_by_bus2[key]))
@@ -960,7 +986,7 @@
                       .attr("class", "line")
                       .attr('fill', 'none');
                 }
-
+              }
                //add to the speed chart
                 for (key in outlier_data_by_bus2){
                     speedVis.append('svg:path')
@@ -972,7 +998,7 @@
                 }
                 
 				overlay_outliers.setMap(map);
-				loadPtsRaw();
+				loadPtsRaw(false);
 				//console.log("teste");
 			});
 		}
@@ -1128,8 +1154,8 @@
 			rangeMinute = (timeRange%60)
 			document.getElementById("valueTimeRange").innerHTML = format2digits(rangeHour) + ":" + format2digits(rangeMinute);*/
 
-			loadPtsOutliers();
-			//loadPtsRaw();
+			loadPtsOutliers(false, "");
+			
 		}
         
         //force reset of slide bars
