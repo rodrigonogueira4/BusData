@@ -29,7 +29,7 @@
 		  height: 20px;
 		  padding-right: 100px;
 		  font: 10px sans-serif;
-          z-index: 1;
+          z-index: 2;
 		}
 
 		.rawpt circle {
@@ -46,9 +46,15 @@
 		  height: 1000px;
 		  padding-right: 100px;
 		  font: 10px sans-serif;
-          z-index: 2;
+          z-index: 3;
 		}
 
+		.connectionline {
+          z-index: 1;
+          stroke: red;
+          stroke-width: 1;
+		}
+        
 		.outliers circle {
 		  fill: red;
 		  stroke: black;
@@ -122,6 +128,13 @@
 			width: 950px;
 			height: 40px;
 		}
+        #outlierinfo {
+            border-radius: 25px;
+            border: 2px solid #8AC007;
+            padding: 20px; 
+            width: 200px;
+            height: 150px; 
+        }
 		
 	</style>
 	</head>
@@ -131,7 +144,7 @@
         </div>
         <br>
         <font id="valStartTime"></font><canvas id=canvastime width=800 height=30></canvas><font id="valEndTime"></font>
-        <!--<input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>-->
+        <input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>
         <br><br>
         
 		<div style="width: 100%; height: 700px; overflow: hidden;">
@@ -150,11 +163,17 @@
 			</div>-->
 			<div style="margin-left: 300px;"> <div id="map"></div> </div>
 		</div>
-		<div class="container">
-			<div class="jumbotron">
-				<svg id="visualization" width="1000" height="350"></svg>
-			</div>
-		</div>
+        
+        <div style="width: 100%; overflow: hidden;">
+            <div style="width: 600px; float: left;">
+                <div class="container">
+                    <div class="jumbotron">
+                        <svg id="visualization" width="1000" height="350"></svg>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-left: 1050px;"><br><br><br><br><div style="height: 100px" id="outlierinfo"><div>
+        </div>    
 <!--     <div class="container"> -->
 <!-- 			<div class="jumbotron"> -->
 <!-- 				<svg id="speedVisualization" width="1000" height="350"></svg> -->
@@ -759,16 +778,17 @@
 										   )
 										   .style("width", "14px")
 										   .style("height", "14px")
+                                           .style("z-index", 20)
 										   .attr("class", "marker")
-										   .on("click", function(d, i) { 
-											  alert("Selected node:\n" +
-													"Start: " + d.value['TimeStampStart'] + "\n"+
-													"End:   " + d.value['TimeStampEnd'] + "\n"+
-													"Line: " + d.value['Line'] + "\n"+
-													"Bus Id: " + d.value['BusId']);
+										   .on("click", function(d, i) {
 												vis.selectAll("path.line").remove();
 												loadPtsOutliers(true, d.value['BusId'], false);
 												loadPtsRaw(true, false);
+                                                $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
+													"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
+													"<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
+													"<b>Line:</b> " + d.value['Line'] + "<br>"+
+													"<b>Bus Id:</b> " + d.value['BusId']);
 													
 											});
 			//console.log(marker);
@@ -809,12 +829,13 @@
                             //}
 								return "";
 						});*/
-            
-			/*if (selectedLines.length != 0) {
+            $(".marker2").remove();
+			if (selectedLines.length != 0 && $('#ConnectedPts').is(':checked')) {
                 //remove all lines
-                $(".marker2").remove();
+                
                 var marker = outlier_data_layer.selectAll("svg2")
                                                .data(d3.entries(outlier_data))
+                                               .style("z-index", 1)
                                                .each(
                                                   function (d) {
                                                     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
@@ -844,11 +865,10 @@
                                                )
                                                .attr("class", "marker2");
                 marker.append("svg:line")
-                      .style("stroke", "red") 
-                      .style("stroke-width", 1) 
+                      .attr("class", "connectionline")
                       .attr("x1", 0)
                       .attr("y1", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-                                                    d1 = projection.fromLatLngToDivPixel(d1);
+                                                     d1 = projection.fromLatLngToDivPixel(d1);
                                                      d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
                                                      d2 = projection.fromLatLngToDivPixel(d2);
                                                      if (d1.x>d2.x){
@@ -858,15 +878,15 @@
                                                      }
                                                   })
                       .attr("x2", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-                                                    d1 = projection.fromLatLngToDivPixel(d1);
+                                                     d1 = projection.fromLatLngToDivPixel(d1);
                                                      d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
                                                      d2 = projection.fromLatLngToDivPixel(d2);
                                                      var minx = Math.min(d1.x, d2.x);
                                                      var maxx = Math.max(d1.x, d2.x);
-                                                    return maxx-minx;
+                                                     return maxx-minx;
                                                   })
                       .attr("y2", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-                                                    d1 = projection.fromLatLngToDivPixel(d1);
+                                                     d1 = projection.fromLatLngToDivPixel(d1);
                                                      d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
                                                      d2 = projection.fromLatLngToDivPixel(d2);
                                                      if (d1.x>d2.x){
@@ -875,7 +895,7 @@
                                                          return d2.y - Math.min(d1.y,d2.y);
                                                      }
                                                   });
-            }*/
+            }
 		};
     
 		overlay_outliers.onRemove = function() {
@@ -958,6 +978,10 @@
 		}
 			
 		function loadPtsOutliers(plotTemporalChart, busID, redrawPoints) {
+            
+            //erase selected oulier div
+            $("#outlierinfo").html("<br><br><b>No Outlier Selected<b>");
+            
 			if (redrawPoints)
 			{
 				overlay_outliers.setMap(null);
@@ -1131,7 +1155,6 @@
         
               if(plotTemporalChart) {
           		  //add to the temporal chart
-                //console.log(outlier_data_by_bus2);
                 for (key in outlier_data_by_bus2){
                     vis.append('svg:path')
                       .attr('d', lineGenOutlier(outlier_data_by_bus2[key]))
@@ -1142,21 +1165,20 @@
                 }
               }
                //add to the speed chart
-                for (key in outlier_data_by_bus2){
+               /* for (key in outlier_data_by_bus2){
                     speedVis.append('svg:path')
                       .attr('d', speedLineGen(outlier_data_by_bus2[key]))
                       .attr('stroke', 'red')
                       .attr('stroke-width', 3)
                       .attr("class", "line")
                       .attr('fill', 'none');
-                }
+                }*/
                 
 				if (redrawPoints)
 				{
 					overlay_outliers.setMap(map);
 					loadPtsRaw(false, true);
 				}
-				//console.log("teste");
 			});
 		}
 		
