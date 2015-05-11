@@ -1,0 +1,3 @@
+ID,NomePonto,Linha,Onibus,Hora,DiaMes,Mes,Ano,Velocidade,LatitudePonto,LongitudePonto,TimeStamp,DescricaoPonto,Speed
+124523642,416 - A71531,416,A71531,0,14,12,2013,100,-22.931425,-43.208725,2013-12-14 00:15:02.247 UTC,Data/Hora - 14/12/2013 00:45:54<br /><br /> Velocidade: 100 Km/h,0.0
+124531212,416 - A71552,416,A71552,0,14,12,2013,0,-22.929863,-43.253971,2013-12-14 00:26:46.72 UTC,Data/Hora - 14/12/2013 00:54:38<br /><br /> Velocidade: 0 Km/h,0.00855722798929

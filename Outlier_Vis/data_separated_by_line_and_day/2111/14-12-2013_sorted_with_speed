@@ -1,0 +1,4 @@
+ID,NomePonto,Linha,Onibus,Hora,DiaMes,Mes,Ano,Velocidade,LatitudePonto,LongitudePonto,TimeStamp,DescricaoPonto,Speed
+124518101,2111 - C47956,2111,C47956,0,14,12,2013,0,-22.952385,-43.348194,2013-12-14 00:08:16.933 UTC,Data/Hora - 14/12/2013 01:07:33<br /><br /> Velocidade: 0 Km/h,0.0
+124523574,2111 - C47956,2111,C47956,0,14,12,2013,0,-22.952385,-43.348194,2013-12-14 00:15:02.247 UTC,Data/Hora - 14/12/2013 01:13:32<br /><br /> Velocidade: 0 Km/h,0.0
+124524807,2111 - C47956,2111,C47956,0,14,12,2013,0,-22.952385,-43.348194,2013-12-14 00:20:31.717 UTC,Data/Hora - 14/12/2013 01:19:32<br /><br /> Velocidade: 0 Km/h,0.0

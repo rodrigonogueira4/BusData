@@ -1,0 +1,5 @@
+ID,NomePonto,Linha,Onibus,Hora,DiaMes,Mes,Ano,Velocidade,LatitudePonto,LongitudePonto,TimeStamp,DescricaoPonto,Speed
+125903607,507 - A72085,507,A72085,0,15,12,2013,0,-22.889107,-43.292789,2013-12-15 00:01:49.43 UTC,Data/Hora - 15/12/2013 00:57:14<br /><br /> Velocidade: 0 Km/h,0.0
+125923170,507 - A72085,507,A72085,0,15,12,2013,0,-22.889107,-43.292789,2013-12-15 00:27:32.76 UTC,Data/Hora - 15/12/2013 00:57:14<br /><br /> Velocidade: 0 Km/h,0.0
+125903713,507 - A72115,507,A72115,0,15,12,2013,0,-22.913937,-43.182423,2013-12-15 00:01:49.43 UTC,Data/Hora - 15/12/2013 00:58:52<br /><br /> Velocidade: 0 Km/h,0.0
+125900092,507 - A72143,507,A72143,0,15,12,2013,6,-22.919811,-43.238819,2013-12-15 00:01:49.43 UTC,Data/Hora - 15/12/2013 00:58:34<br /><br /> Velocidade: 6 Km/h,0.0

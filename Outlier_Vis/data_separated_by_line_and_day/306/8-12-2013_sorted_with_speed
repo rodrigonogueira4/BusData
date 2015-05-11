@@ -1,0 +1,4 @@
+ID,NomePonto,Linha,Onibus,Hora,DiaMes,Mes,Ano,Velocidade,LatitudePonto,LongitudePonto,TimeStamp,DescricaoPonto,Speed
+115335874,306 - C47789,306,C47789,0,8,12,2013,0,-22.952602,-43.34943,2013-12-08 00:18:46.63 UTC,Data/Hora - 08/12/2013 01:16:33<br /><br /> Velocidade: 0 Km/h,0.0722084964045
+115337885,306 - C47789,306,C47789,0,8,12,2013,0,-22.952576,-43.349342,2013-12-08 00:24:31.297 UTC,Data/Hora - 08/12/2013 01:18:33<br /><br /> Velocidade: 0 Km/h,0.0986812335186
+115342243,306 - C47789,306,C47789,0,8,12,2013,0,-22.952576,-43.349342,2013-12-08 00:27:02.08 UTC,Data/Hora - 08/12/2013 01:18:33<br /><br /> Velocidade: 0 Km/h,0.0
