@@ -135,16 +135,16 @@
             width: 200px;
             height: 150px; 
         }
-		
 	</style>
 	</head>
 	<body>
-        <div id="dayChart" class="verticalBarchartDiv">
+        <div style="width: 100%;height: 200px;"><center><font size="8">VisOut</font><br><font size="4">Visualization of Outlier Buses in the City Rio de Janeiro</font></center></div>
+        <center><div id="dayChart" class="verticalBarchartDiv">
             <svg class="verticalBarchart"></svg>
-        </div>
+        </div></center>
         <br>
-        <font id="valStartTime"></font><canvas id=canvastime width=800 height=30></canvas><font id="valEndTime"></font>
-        <input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>
+        <center><font id="valStartTime"></font><canvas id=canvastime width=800 height=30></canvas><font id="valEndTime"></font></center>
+        <!--<input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>-->
         <br><br>
         
 		<div style="width: 100%; height: 700px; overflow: hidden;">
@@ -830,7 +830,8 @@
 								return "";
 						});*/
             $(".marker2").remove();
-			if (selectedLines.length != 0 && $('#ConnectedPts').is(':checked')) {
+			//if (selectedLines.length != 0 && $('#ConnectedPts').is(':checked')) {
+            if (selectedLines.length != 0) {
                 //remove all lines
                 
                 var marker = outlier_data_layer.selectAll("svg2")
