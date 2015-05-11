@@ -54,7 +54,6 @@
           stroke: red;
           stroke-width: 1;
 		}
-        
 		.outliers circle {
 		  fill: red;
 		  stroke: black;
@@ -88,7 +87,7 @@
 		.barchartDiv {
 			float: left;
 			overflow-y: scroll;
-			height: 680px;
+			height: 380px;
 			width: 300px;
 		}
 		
@@ -120,40 +119,72 @@
 		
 		#sortLineBarChartDiv {
 			width: 285px;
+			left: 0px;
 		}
 		
 		#busesOfLine {
-			display: inline-block;
-			overflow-x: scroll;
-			width: 950px;
-			height: 40px;
+			float: left;
+
+			overflow-y: scroll;
+			width: 100px;
+			height: 380px;
+			
+			cursor: default;
+			
+			margin: 0;
 		}
+
         #outlierinfo {
             border-radius: 25px;
             border: 2px solid #8AC007;
             padding: 20px; 
             width: 200px;
             height: 150px; 
-        }
+        }		
+
+		#canvastime {
+			border: 2px solid black;
+		}
+		#hideDayBarChart {
+			position: relative;
+			top: 0;
+			left: 0;
+
+			height: 15px;
+			width: 15px;
+			
+			background: steelblue;
+			color: white;
+			
+			border: 2px solid black;
+			padding-left: 1px;
+			padding-right: 1px;
+			
+			text-align: center;
+			
+			cursor: default;
+		}
+		
 	</style>
 	</head>
 	<body>
         <div style="width: 100%;height: 200px;"><center><font size="8">VisOut</font><br><font size="4">Visualization of Outlier Buses in the City Rio de Janeiro</font></center></div>
+		<div id="hideDayBarChart"><</div>
         <center><div id="dayChart" class="verticalBarchartDiv">
             <svg class="verticalBarchart"></svg>
         </div></center>
         <br>
-        <center><font id="valStartTime"></font><canvas id=canvastime width=800 height=30></canvas><font id="valEndTime"></font></center>
+        <center><font id="valStartTime"></font><canvas id="canvastime" width="800" height="30"></canvas><font id="valEndTime"></font></center>
         <!--<input type="checkbox" id="ConnectedPts" value="ConnectedPtsValue" onchange="loadPts()" checked>Connected Points<br>-->
         <br><br>
         
-		<div style="width: 100%; height: 700px; overflow: hidden;">
-            <div id="sortLineBarChartDiv"><button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort</button></div>
-			<div id="busesOfLine"></div>
+		<div style="width: 100%; height: 400px; overflow: hidden;">
+            <div id="sortLineBarChartDiv"><button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort by number of outliers</button></div>
 			<!--<div id="sortLineBarChartDiv"><input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()">Sort by # of Outliers</input></div>-->
 			<div class="barchartDiv">
 				<svg class="barchart"></svg>
 			</div>
+			<div id="busesOfLine"></div>
 			<!--<div style="width: 100px; float: left;"> Lines<br>
 				<select id = "lstbox_lines"
 					onChange="loadPts()"
@@ -161,9 +192,8 @@
 					size = "30">
 				  </select>
 			</div>-->
-			<div style="margin-left: 300px;"> <div id="map"></div> </div>
+			<div style="margin-left: 400px;"> <div id="map" style="height: 400px"></div> </div>
 		</div>
-        
         <div style="width: 100%; overflow: hidden;">
             <div style="width: 600px; float: left;">
                 <div class="container">
@@ -174,6 +204,7 @@
             </div>
             <div style="margin-left: 1050px;"><br><br><br><br><div style="height: 100px" id="outlierinfo"><div>
         </div>    
+
 <!--     <div class="container"> -->
 <!-- 			<div class="jumbotron"> -->
 <!-- 				<svg id="speedVisualization" width="1000" height="350"></svg> -->
@@ -361,6 +392,19 @@
         //xScale.domain(d3.extent(data, function(d) { return d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 15:36:03"); }));
         //xScale.domain([d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 09:36:03"),d3.time.format("%Y-%m-%d %H:%M:%S").parse("2013-03-12 11:36:03")]);
     
+		$("#hideDayBarChart").click(function() {
+			if ($("#dayChart").is(':visible'))
+			{
+				$("#dayChart").hide();
+				$("#hideDayBarChart").html(">");
+			}
+			else
+			{
+				$("#dayChart").show();
+				$("#hideDayBarChart").html("<");
+			}
+		});
+	
 		function parseDate(datestr) {
 			return Date.parse(datestr.substring(0, 19).replace(" ", "T"));
 		}
@@ -438,7 +482,7 @@
 			raw_markers = [];
 		};
         
-		function loadPtsRaw(plotTemporalChart, redrawPoints) {
+		function loadPtsRaw(plotTemporalChart, redrawPoints, reloadIndividualBuses) {
 			if (redrawPoints)
 			{
 				overlay_raw.setMap(null);
@@ -493,92 +537,122 @@
 							listOfBuses.push(row[3]);
 					});
 					
-					var div_list = document.getElementById("busesOfLine");
-					div_list.innerHTML = "";
-					div_list.style.position = "absolute";
-					div_list.style.top = "40%";
-					div_list.style.left = "23%";
-					div_list.style.display = "inline-block";
-					
-					listOfSelectedBuses = [];
-					
-					for (var i=0; i<listOfBuses.length; i++)
+					if (reloadIndividualBuses)
 					{
-						if (listOfOutlierBuses.indexOf(listOfBuses[i]) != -1)
+						var div_list = document.getElementById("busesOfLine");
+						div_list.innerHTML = "";
+						div_list.style.position = "relative";
+						//div_list.style.top = "0%";
+						//div_list.style.left = "23%";
+						//div_list.style.display = "inline-block";
+						
+						listOfSelectedBuses = [];
+						
+						for (var i=0; i<listOfBuses.length; i++)
 						{
-							var div = document.createElement("div");
-
-							div_list.appendChild(div);
-							
-							div.innerHTML = listOfBuses[i];
-							div.style.color = "white";
-							//div.style.float = "left";
-							div.style.border = "2px solid #000000";
-							div.style.marginLeft = "1px";
-							div.style.marginRight = "1px";
-							div.style.display = "table-cell";
 							if (listOfOutlierBuses.indexOf(listOfBuses[i]) != -1)
 							{
-								div.style.background = "red";
-								div.className = "busOutlierDiv";
-								//listOfBuses[i] = "*****" + listOfBuses[i];
+								var div = document.createElement("div");
+
+								div_list.appendChild(div);
+								
+								div.innerHTML = listOfBuses[i];
+								div.style.color = "white";
+								//div.style.float = "left";
+								div.style.border = "1px solid #000000";
+								div.style.marginLeft = "1px";
+								div.style.marginRight = "1px";
+								div.style.textAlign = "center";
+								//div.style.display = "table-column";
+								div.style.opacity = 0.4;
+								if (listOfOutlierBuses.indexOf(listOfBuses[i]) != -1)
+								{
+									div.style.background = "red";
+									div.className = "busOutlierDiv";
+									//listOfBuses[i] = "*****" + listOfBuses[i];
+								}
+								else
+								{
+									div.style.background = "blue";
+									div.className = "busDiv";
+								}							
 							}
-							else
-							{
-								div.style.background = "blue";
-								div.className = "busDiv";
-							}							
 						}
+						
+						$(".busDiv").hover(function() {
+							$(this).css("background", "green");
+						});
+
+						$(".busOutlierDiv").hover(function() {
+							$(this).css("opacity", 1.0);
+						});
+						
+						$(".busDiv").mouseout(function() {
+							$(this).css("background", "blue");
+						});
+
+						$(".busOutlierDiv").mouseout(function() {
+							if (!($(this).hasClass("busselected")))
+								$(this).css("opacity", 0.4);
+						});
+						
+						$(".busOutlierDiv").click(function() {
+							listOfSelectedBuses = [$(this).html()];
+
+							$(".marker2").remove(); //remove paths between outliers
+
+							d3.select(".busselected").style({opacity: 0.4});
+							d3.select(".busselected").classed("busselected", false);
+							d3.select(this).classed("busselected", true);
+							d3.select(this).style({opacity: 1.0});
+							
+							var line = $(this).html();
+
+							for (var j=0; j<raw_markers.length; j++)
+								raw_markers[j].each(transform);
+							for (var i=0; i<outlier_markers.length; i++)
+								outlier_markers[i].each(transform2);
+							function transform(d) {
+								if (listOfSelectedBuses.indexOf(d.value[3]) != -1)
+								{
+									//console.log("a");
+									return d3.select(this).style("opacity", 1.0);
+								}
+								else
+								{
+									//console.log("b");
+									return d3.select(this).style("opacity", 0.0);
+								}
+							}
+							function transform2(d) {
+								if (d.value['BusId'] == line)
+								{
+									vis.selectAll("path.line").remove();
+									loadPtsOutliers(true, d.value['BusId'], false);
+									loadPtsRaw(true, false, false);
+
+									$("#outlierinfo").html("<b>Selected outlier:</b><br>"+
+										"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
+										"<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
+										"<b>Line:</b> " + d.value['Line'] + "<br>"+
+										"<b>Bus Id:</b> " + d.value['BusId']
+									);
+								}
+								if (listOfSelectedBuses.indexOf(d.value["BusId"]) != -1)
+								{
+									//console.log("a");
+									//return d3.select(this).style("opacity", 1.0);
+									return d3.select(this).style("visibility", "visible");
+								}
+								else
+								{
+									//console.log("b");
+									//return d3.select(this).style("opacity", 0.0);
+									return d3.select(this).style("visibility", "hidden");
+								}
+							}
+						});
 					}
-					
-					$(".busDiv").hover(function() {
-						$(this).css("background", "green");
-					});
-
-					$(".busOutlierDiv").hover(function() {
-						$(this).css("background", "green");
-					});
-					
-					$(".busDiv").mouseout(function() {
-						$(this).css("background", "blue");
-					});
-
-					$(".busOutlierDiv").mouseout(function() {
-						$(this).css("background", "red");
-					});
-					
-					$(".busOutlierDiv").click(function() {
-						listOfSelectedBuses = [$(this).html()];
-						//$(".rawpt circle").css("fill", "black");
-						for (var j=0; j<raw_markers.length; j++)
-							raw_markers[j].each(transform);
-						for (var i=0; i<outlier_markers.length; i++)
-							outlier_markers[i].each(transform2);
-						function transform(d) {
-							if (listOfSelectedBuses.indexOf(d.value[3]) != -1)
-							{
-								//console.log("a");
-								return d3.select(this).style("opacity", 1.0);
-							}
-							else
-							{
-								//console.log("b");
-								return d3.select(this).style("opacity", 0.0);
-							}
-						}
-						function transform2(d) {
-							if (listOfSelectedBuses.indexOf(d.value["BusId"]) != -1)
-							{
-								//console.log("a");
-								return d3.select(this).style("opacity", 1.0);
-							}
-							else
-							{
-								//console.log("b");
-								return d3.select(this).style("opacity", 0.0);
-							}
-						}
-					});
 
           
 					//select buses for temporal chart comparison. Select buses that are close to the start point of the outlier
@@ -783,14 +857,14 @@
 										   .on("click", function(d, i) {
 												vis.selectAll("path.line").remove();
 												loadPtsOutliers(true, d.value['BusId'], false);
-												loadPtsRaw(true, false);
+												loadPtsRaw(true, false, false);
                                                 $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
 													"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
 													"<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
 													"<b>Line:</b> " + d.value['Line'] + "<br>"+
 													"<b>Bus Id:</b> " + d.value['BusId']);
 													
-											});
+												});
 			//console.log(marker);
 			// Add a circle.
 			outlier_markers.push(marker.append("svg:circle"));
@@ -904,6 +978,7 @@
 			outlier_markers = [];
 		};
 
+		var daysBars = [];
 		function loadOutliersPerDay() {
 			var barchart_data = [];
 			d3.csv(outliersperdayfile, function(data) {
@@ -927,7 +1002,7 @@
 								.enter().append("g")
 								.attr("transform", function(d, i) { return "translate(" + i * barWidth + "," + (height - y(d.number_of_outliers)) + ")"; });
 
-				bar.append("rect")
+				daysBars.push(bar.append("rect")
 					.attr("height",  function(d) { return y(d.number_of_outliers); })
 					.attr("width", barWidth - 1)
 					.on("click", function(d, i) {
@@ -946,7 +1021,7 @@
 										})
 					.on("mouseout", function(d, i) {
 										d3.select(this).style({opacity: '1.0'});
-									 });
+									 }));
 
 				bar.append("text")
 					.attr("x", barWidth / 2)
@@ -955,12 +1030,11 @@
 					.attr("transform", function(d) { return "translate(0, " + (y(d.number_of_outliers) - 3) + ")"; })
 					.text(function(d) { return d.key; })
 					.on("click", function(d, i) {
-                  fields = d.key.split("/");
+									fields = d.key.split("/");
 									dateFile = fields[1] + "-" + fields[0] +  "-2013_sorted_with_speed";
-                  outliersfile = fields[1] + "_" + fields[0] + ".csv";
+									outliersfile = fields[1] + "_" + fields[0] + ".csv";
 									loadLstboxFromOutliers();
 								 });
-
 				
 				bar.append("text")
 					.attr("x", barWidth / 2)
@@ -969,13 +1043,28 @@
 					//.attr("transform", function(d) { return "translate(0, " + 12 + ")"; })
 					.text(function(d) { return d.number_of_outliers; })
 					.on("click", function(d, i) {
-                  fields = d.key.split("/");
+									fields = d.key.split("/");
 									dateFile = fields[1] + "-" + fields[0] + "-2013_sorted_with_speed";
-                  outliersfile = fields[1] + "_" + fields[0] + ".csv";
+									outliersfile = fields[1] + "_" + fields[0] + ".csv";
 									loadLstboxFromOutliers();
 								 });
-
+				colorDefaultDay();
 			});
+		}
+		
+		function colorDefaultDay()
+		{
+			for (var i=0; i<daysBars.length; i++)
+				daysBars[i].each(transform);
+
+			function transform(d)
+			{
+				if (d.key == "12/5")
+				{
+					d3.select(this).classed("vselected", true);
+					d3.select(this).style({fill: 'red'});
+				}
+			}
 		}
 			
 		function loadPtsOutliers(plotTemporalChart, busID, redrawPoints) {
@@ -1178,7 +1267,7 @@
 				if (redrawPoints)
 				{
 					overlay_outliers.setMap(map);
-					loadPtsRaw(false, true);
+					loadPtsRaw(false, true, true);
 				}
 			});
 		}
@@ -1211,10 +1300,10 @@
             
 			if (sortLineBarChartByNumberOfOutliers){
 				sortLineBarChartByNumberOfOutliers = false;
-                $("#btnSort").html('Sort');
+                $("#btnSort").html('Sort by number of outliers');
             }else{
 				sortLineBarChartByNumberOfOutliers = true;
-                $("#btnSort").html('Unsort');
+                $("#btnSort").html('Sort by line name');
             }
 			loadLstboxFromOutliers();
 		}
@@ -1311,8 +1400,7 @@
 					.on("click", function(d, i) {
 									selectedLines = [d.key];
 									loadPts();
-								 });
-									
+								 });									
 			});
 		}
 		function format2digits(n){
@@ -1349,6 +1437,8 @@
         canvas.update = function(g) {
             this.g = g; // so the drawLine method will know where to draw to.
             
+			g.clearRect(0, 0, g.width, g.height);
+			
             //check if clicked on rectangle 1 or 2
             if (this.cursor.x > rect1x-10 && this.cursor.x < rect1x+10  && this.cursor.z==1){
                 selrect = 1;
@@ -1382,11 +1472,16 @@
             }
             
             //draw rectangle 1 and 2
-            g.fillStyle="black";
+            g.fillStyle="dimgray";
             g.fillRect(rect1x-10,0,20,this.height);
             g.fillRect(rect2x-10,0,20,this.height);
+
+            /*g.fillStyle="black";
+            g.rect(rect1x-10,0,20,this.height);
+            g.rect(rect2x-10,0,20,this.height);
+			g.stroke();*/
             
-            g.fillStyle="lightgreen";
+            g.fillStyle="darkgray";
             g.fillRect(rect1x+10,0,rect2x-rect1x-20,this.height);
             
             var startTime = 1439*(rect1x-10)/this.width;
