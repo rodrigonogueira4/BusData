@@ -2,103 +2,29 @@
 <html>
 	<head>
 
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="shortcut icon" href="favicon.ico">
-        <title>MultiDatesPicker for jQuery UI</title>
-        <meta name="description" content="MDP is a little plugin that enables jQuery UI calendar to manage multiple dates.">
-        <meta name="keywords" content="Multiple Dates Picker, jQuery, jQuery UI, javascript, calendar, Luca Lauretta, dubrox">
-        <meta name="author" content="Luca Lauretta aka dubrox">
-
-        <!-- loads jquery and jquery ui -->
-        <!-- -->
         <script type="text/javascript" src="js/jquery-1.11.1.js"></script>
         <script type="text/javascript" src="js/jquery-ui-1.11.1.js"></script>
-        <!-->
-        <script type="text/javascript" src="js/jquery-2.1.1.js"></script>
-        <script type="text/javascript" src="js/jquery-ui-1.11.1.js"></script>
-        <!-- -->
-
-        <!-- loads mdp -->
         <script type="text/javascript" src="jquery-ui.multidatespicker.js"></script>
-		<!-- mdp demo code -->
-		<script type="text/javascript">
-		<!--
-			var latestMDPver = $.ui.multiDatesPicker.version;
-			var lastMDPupdate = '2014-09-19';
-			
-			$(function() {
-				// Version //
-				//$('title').append(' v' + latestMDPver);
-				$('.mdp-version').text('v' + latestMDPver);
-				$('#mdp-title').attr('title', 'last update: ' + lastMDPupdate);
-				
-				// Documentation //
-				$('i:contains(type)').attr('title', '[Optional] accepted values are: "allowed" [default]; "disabled".');
-				$('i:contains(format)').attr('title', '[Optional] accepted values are: "string" [default]; "object".');
-				$('#how-to h4').each(function () {
-					var a = $(this).closest('li').attr('id');
-					$(this).wrap('<'+'a href="#'+a+'"></'+'a>');
-				});
-				$('#demos .demo').each(function () {
-					var id = $(this).find('.box').attr('id') + '-demo';
-					$(this).attr('id', id)
-						.find('h3').wrapInner('<'+'a href="#'+id+'"></'+'a>');
-				});
-				
-				// Run Demos
-				$('.demo .code').each(function() {
-					eval($(this).attr('title','NEW: edit this code and test it!').text());
-					this.contentEditable = true;
-				}).focus(function() {
-					if(!$(this).next().hasClass('test'))
-						$(this)
-							.after('<button class="test">test</button>')
-							.next('.test').click(function() {
-								$(this).closest('.demo').find('.hasDatepicker').multiDatesPicker('destroy');
-								eval($(this).prev().text());
-								$(this).remove();
-							});
-				});
-			});
-		// -->
-			
-			
-		</script>
 
-		
-		</script>
-		
 		<!-- loads some utilities (not needed for your developments) -->
 		<link rel="stylesheet" type="text/css" href="css/mdp.css">
-		<link rel="stylesheet" type="text/css" href="css/prettify.css">
-		<script type="text/javascript" src="js/prettify.js"></script>
-		<script type="text/javascript" src="js/lang-css.js"></script>
-		<script type="text/javascript">
-		$(function() {
-			prettyPrint();
-		});
-		</script>
-
-        </head>
-	<body>
-<li class="demo full-row">
-						<h3>Full year</h3>
-
+    </head>
+<body>
         <div id="full-year" class="box"></div>
-	
-	</li>
-					
-
         <script type="text/javascript">
             var today = new Date();
+            console.log(today);
             var y = today.getFullYear();
-            var d = today.getDay();
-            var m = today.getMonth();
-
+            var d = today.getDate();
+            var m = today.getMonth()+1;
+console.log(d);
+                console.log(m);
+                console.log(y);
             $('#full-year').multiDatesPicker({
-                addDates: ['10/14/'+y, '02/19/'+y, '01/14/'+y, '11/16/'+y],
+                addDates: [m + '/' + d + '/' + y],
                 numberOfMonths: [1,2],
                 defaultDate: m + '/' + d + '/' + y
+                
             });
 
         </script>
