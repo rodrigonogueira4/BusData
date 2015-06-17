@@ -4,12 +4,7 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
     <script type="text/javascript" src="d3.v2.js"></script>
-    <script type="text/javascript" src="jquery.min.js"></script>
-    
-    <!--<script type="text/javascript" src="jquery-ui-1.11.1.js"></script>   
-    <script type="text/javascript" src="jquery-ui.multidatespicker.js"></script>
-    <link rel="stylesheet" type="text/css" href="mdp.css">-->
-      
+    <script type="text/javascript" src="jquery.min.js"></script>     
       
     <link rel="stylesheet" type="text/css" href="jquery.datepick.css"> 
     <script type="text/javascript" src="jquery.plugin.js"></script> 
@@ -145,11 +140,15 @@
 		}
 
         #outlierinfo {
+            background-color: lightgray;
             border-radius: 25px;
             border: 2px solid #8AC007;
             padding: 20px; 
             width: 200px;
-            height: 150px; 
+            height: 100px;
+            position: absolute; /*newly added*/
+            right: 5px; /*newly added*/
+            bottom: -180px;/*newly added*/
         }		
 
 		#canvastime {
@@ -174,7 +173,7 @@
 			
 			cursor: default;
 		}
-		
+       
 	</style>
 	</head>
 	<body>
@@ -218,9 +217,9 @@
                     </div>
                 </div>
             </div>
-            <div style="margin-left: 1050px;"><br><br><br><br><div style="height: 100px" id="outlierinfo"><div>
+            
         </div>    
-
+        <div id="outlierinfo"></div>
 <!--     <div class="container"> -->
 <!-- 			<div class="jumbotron"> -->
 <!-- 				<svg id="speedVisualization" width="1000" height="350"></svg> -->
@@ -259,6 +258,8 @@
 		var max_longitude_bounding = null;
     </script>
     <script type="text/javascript">
+        $("#outlierinfo").hide(); //start info box invisible
+        
         $('#multiInlinePicker').datepick({ 
             multiSelect: 100, monthsToShow: 2, monthsToStep: 1, 
             defaultDate: '12/05/2013', prevText: 'Prev month', nextText: 'Next month'});
@@ -276,20 +277,6 @@
             loadLstboxFromOutliers();
         })
     </script>   
-    <!--<script type="text/javascript">
-            
-        //load multiday calendar chart
-        var today = new Date();
-        var y = today.getFullYear();
-        var d = today.getDate();
-        var m = today.getMonth()+1;
-        $('#full-year').multiDatesPicker({
-            addDates: [m + '/' + d + '/' + y],
-            numberOfMonths: [1,2],
-            defaultDate: m + '/' + d + '/' + y
-
-        });
-    </script>-->
 	<script type="text/javascript">
     
     //Speed Chart
@@ -443,17 +430,11 @@
 			if ($("#dayChart").is(':visible'))
 			{
                 $('#timedatediv').hide();
-                //$('#multiInlinePicker').hide();
-				//$("#dayChart").hide();
-                //$("#timefilter").hide();
 				$("#hideDayBarChart").html(">");
 			}
 			else
 			{
                 $('#timedatediv').show();
-                //$('#multiInlinePicker').show();
-				//$("#dayChart").show();
-                //$("#timefilter").show();
 				$("#hideDayBarChart").html("<");
 			}
 		});
@@ -595,9 +576,6 @@
 						var div_list = document.getElementById("busesOfLine");
 						div_list.innerHTML = "";
 						div_list.style.position = "relative";
-						//div_list.style.top = "0%";
-						//div_list.style.left = "23%";
-						//div_list.style.display = "inline-block";
 						
 						listOfSelectedBuses = [];
 						
@@ -668,12 +646,10 @@
 							function transform(d) {
 								if (listOfSelectedBuses.indexOf(d.value[3]) != -1)
 								{
-									//console.log("a");
 									return d3.select(this).style("opacity", 1.0);
 								}
 								else
 								{
-									//console.log("b");
 									return d3.select(this).style("opacity", 0.0);
 								}
 							}
@@ -690,17 +666,14 @@
 										"<b>Line:</b> " + d.value['Line'] + "<br>"+
 										"<b>Bus Id:</b> " + d.value['BusId']
 									);
+                                    $("#outlierinfo").show();
 								}
 								if (listOfSelectedBuses.indexOf(d.value["BusId"]) != -1)
 								{
-									//console.log("a");
-									//return d3.select(this).style("opacity", 1.0);
 									return d3.select(this).style("visibility", "visible");
 								}
 								else
 								{
-									//console.log("b");
-									//return d3.select(this).style("opacity", 0.0);
 									return d3.select(this).style("visibility", "hidden");
 								}
 							}
@@ -909,12 +882,13 @@
 												vis.selectAll("path.line").remove();
 												loadPtsOutliers(true, d.value['BusId'], false);
 												loadPtsRaw(true, false, false);
+                                               
                                                 $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
 													"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
 													"<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
 													"<b>Line:</b> " + d.value['Line'] + "<br>"+
 													"<b>Bus Id:</b> " + d.value['BusId']);
-													
+												$("#outlierinfo").show();	
 												});
 			//console.log(marker);
 			// Add a circle.
@@ -1141,7 +1115,8 @@
 		function loadPtsOutliers(plotTemporalChart, busID, redrawPoints) {
             
             //erase selected oulier div
-            $("#outlierinfo").html("<br><br><b>No Outlier Selected<b>");
+            $("#outlierinfo").hide();
+            //$("#outlierinfo").html("<br><br><b>No Outlier Selected<b>");
             
 			if (redrawPoints)
 			{
@@ -1320,7 +1295,7 @@
                     vis.append('svg:path')
                       .attr('d', lineGenOutlier(outlier_data_by_bus2[key]))
                       .attr('stroke', 'red')
-                      .attr('stroke-width', 3)
+                      .attr('stroke-width', 1)
                       .attr("class", "line")
                       .attr('fill', 'none');
                 }
@@ -1507,16 +1482,6 @@
 			vis.selectAll("path.line").remove();
             $(".marker2").remove();
 
-			/*var startTime = document.getElementById("inputStartTime").value;
-			startHour = Math.floor(startTime/60);
-			startMinute = (startTime%60)
-			document.getElementById("valueStartTime").innerHTML = format2digits(startHour) + ":" + format2digits(startMinute);
-
-			var timeRange = document.getElementById("inputTimeRange").value;
-			rangeHour = Math.floor(timeRange/60);
-			rangeMinute = (timeRange%60)
-			document.getElementById("valueTimeRange").innerHTML = format2digits(rangeHour) + ":" + format2digits(rangeMinute);*/
-
 			loadPtsOutliers(false, "", true);
 			
 		}
@@ -1555,11 +1520,7 @@
             else if (selrect==2){
                 rect2x = Math.min(canvas.width-10,this.cursor.x);
             }
-            //else if (selrect==3){
-            //    var range = rect2x-rect1x;
-            //    rect1x = Math.max(10,this.cursor.x-(range/2));
-            //    rect2x = Math.min(canvas.width-10,this.cursor.x+(range/2));
-            //}
+
             
             //if the rectangles are too close, put them apart
             if (rect2x-rect1x<40){
@@ -1570,11 +1531,6 @@
             g.fillStyle="dimgray";
             g.fillRect(rect1x-10,0,20,this.height);
             g.fillRect(rect2x-10,0,20,this.height);
-
-            /*g.fillStyle="black";
-            g.rect(rect1x-10,0,20,this.height);
-            g.rect(rect2x-10,0,20,this.height);
-			g.stroke();*/
             
             g.fillStyle="darkgray";
             g.fillRect(rect1x+10,0,rect2x-rect1x-20,this.height);
@@ -1590,7 +1546,9 @@
 			document.getElementById("valEndTime").innerHTML = format2digits(endHour) + ":" + format2digits(endMinute);
             
         }    
-		loadOutliersPerDay();
+		
+        loadOutliersPerDay();
 		loadLstboxFromOutliers();
+       
     </script>
 </html>
