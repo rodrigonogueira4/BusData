@@ -231,6 +231,7 @@
 	<script type="text/javascript">
 		var maxPts = 2000;
 		var outliersfile = "outliers/5_12.csv";
+		var outliersfileArray = ["outliers/5_12.csv"];
 		var outliersperdayfile = "number_of_outliers_per_day.csv";
 		var dateFile = "5-12-2013";
 		var startHour;
@@ -274,7 +275,11 @@
             console.log(month);
             dateFile = day + "-" + month +  "-" + year;
             outliersfile = "outliers/" + day + "_" + month + ".csv";
+			if (outliersfileArray.indexOf(outliersfile) == -1)
+				outliersfileArray.push(outliersfile);
+			console.log(outliersfileArray);
             loadLstboxFromOutliers();
+			loadPts();
         })
     </script>   
 	<script type="text/javascript">
@@ -1038,6 +1043,7 @@
                   fields = d.key.split("/");
 									dateFile = fields[1] + "-" + fields[0] + "-2013";
                   outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
+				  outliersfileArray = [outliersfile];
 									loadLstboxFromOutliers();
                    
 								 })
@@ -1062,6 +1068,7 @@
 									fields = d.key.split("/");
 									dateFile = fields[1] + "-" + fields[0] +  "-2013";
 									outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
+									outliersfileArray = [outliersfile];
 									loadLstboxFromOutliers();
 								 })
 					.on("mouseover", function(d, i) {
@@ -1085,6 +1092,7 @@
 									fields = d.key.split("/");
 									dateFile = fields[1] + "-" + fields[0] + "-2013";
 									outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
+									outliersfileArray = [outliersfile];
 									loadLstboxFromOutliers();
 								 })
 					.on("mouseover", function(d, i) {
@@ -1129,15 +1137,32 @@
 				max_longitude_bounding = null;
 			}
 
-			d3.csv(outliersfile, function(data) {
+			var full_data = [];
+			var count = outliersfileArray.length;
+			
+			for (var i=0; i<outliersfileArray.length; i++)
+			{
+				d3.csv(outliersfileArray[i], function(temp_data) {
+					full_data.push(temp_data);
+					
+					if (!--count) loadData();
+				});
+			}
+			function loadData() {
+				var data = [];
+				for (var j=0; j<full_data.length; j++)
+				{
+					data = data.concat(full_data[j]);
+				}
+
 				data = data.filter(function(row,index) {
 					var contains = false;
 					if (selectedLines.length == 0)
 						contains = true;
 					for (i in selectedLines) {
-            if(row['Linha'] == selectedLines[i]) {
-              contains = true;
-            }
+						if (row['Linha'] == selectedLines[i]) {
+							contains = true;
+						}
 					}
 					
 					return contains;
@@ -1315,7 +1340,7 @@
 					overlay_outliers.setMap(map);
 					loadPtsRaw(false, true, true);
 				}
-			});
+			}
 		}
 		
 		function sortByNumberOfOutliers(a, b) 
@@ -1363,7 +1388,23 @@
 			selectedLines = [];
             loadPts();
             
-			d3.csv(outliersfile, function(data) {
+			var full_data = [];
+			var count = outliersfileArray.length;
+			
+			for (var i=0; i<outliersfileArray.length; i++)
+			{
+				d3.csv(outliersfileArray[i], function(temp_data) {
+					full_data.push(temp_data);
+					
+					if (!--count) loadData();
+				});
+			}
+			function loadData() {
+				var data = [];
+				for (var j=0; j<full_data.length; j++)
+				{
+					data = data.concat(full_data[j]);
+				}
 				var data2 = [];
 				var lines_outliers = {};
 				var lines_outliers_total = {};
@@ -1471,7 +1512,7 @@
 					.on("mouseout", function(d, i) {
 										d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
 									 });
-			});
+			};
 		}
 		function format2digits(n){
             return n > 9 ? "" + n: "0" + n;
