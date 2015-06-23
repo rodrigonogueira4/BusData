@@ -147,8 +147,9 @@
             width: 200px;
             height: 100px;
             position: absolute; /*newly added*/
-            right: 5px; /*newly added*/
-            bottom: -180px;/*newly added*/
+            right: 20px; /*newly added*/
+            bottom: -210px;/*newly added*/
+            z-index: 100;
         }		
 
 		#canvastime {
@@ -194,6 +195,7 @@
         
         
 		<div style="width: 100%; height: 600px; overflow: hidden;">
+            
             <div id="sortLineBarChartDiv"><button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort by number of outliers</button></div>
 			<!--<div id="sortLineBarChartDiv"><input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()">Sort by # of Outliers</input></div>-->
 			<div class="barchartDiv">
@@ -208,6 +210,7 @@
 				  </select>
 			</div>-->
 			<div style="margin-left: 400px;"> <div id="map" style="height: 600px"></div> </div>
+            
 		</div>
         <div style="width: 100%; overflow: hidden;">
             <div style="width: 600px; float: left;">
@@ -217,9 +220,9 @@
                     </div>
                 </div>
             </div>
-            
-        </div>    
         <div id="outlierinfo"></div>
+        </div>    
+        
 <!--     <div class="container"> -->
 <!-- 			<div class="jumbotron"> -->
 <!-- 				<svg id="speedVisualization" width="1000" height="350"></svg> -->
@@ -441,11 +444,14 @@
 			{
                 $('#timedatediv').hide();
 				$("#hideDayBarChart").html(">");
+                $('#outlierinfo').css('bottom', '250px');
+                //$('#outlierinfo').redraw();
 			}
 			else
 			{
                 $('#timedatediv').show();
 				$("#hideDayBarChart").html("<");
+                $('#outlierinfo').css('bottom', '-210px');
 			}
 		});
 	
@@ -526,7 +532,7 @@
 			raw_markers = [];
 		};
         
-		function loadPtsRaw(plotTemporalChart, redrawPoints, reloadIndividualBuses) {
+		function loadPtsRaw(plotTemporalChart, redrawPoints, reloadIndividualBuses, BusId) {
 			if (redrawPoints)
 			{
 				overlay_raw.setMap(null);
@@ -538,6 +544,18 @@
 				d3.text("data_separated_by_line_and_day/"+selectedLines[i]+"/" + dateFile, function(text) {
 					raw_data = d3.csv.parseRows(text);
 					raw_data.shift();
+                    
+                    //if specific bus is seleted, select only the raw data from this bus
+                    //console.log("BusId",BusId);
+                    if (BusId){
+                        raw_data = raw_data.filter(function(row,index) {
+                            if (row[3] != BusId) {
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
+                    
 					//do sampling
 					var samplingRate = Math.floor(raw_data.length/maxPts);
 					if (samplingRate < 1) {
@@ -600,17 +618,17 @@
 								div.innerHTML = listOfBuses[i];
 								div.style.color = "white";
 								//div.style.float = "left";
-								div.style.border = "1px solid #000000";
-								div.style.marginLeft = "1px";
-								div.style.marginRight = "1px";
+								div.style.border = "0px solid white";
+                                div.style.marginBottom = "2px";
+								div.style.marginLeft = "2px";
+								div.style.marginRight = "2px";
 								div.style.textAlign = "center";
 								//div.style.display = "table-column";
-								div.style.opacity = 0.4;
+								div.style.opacity = 0.5;
 								if (listOfOutlierBuses.indexOf(listOfBuses[i]) != -1)
 								{
 									div.style.background = "red";
 									div.className = "busOutlierDiv";
-									//listOfBuses[i] = "*****" + listOfBuses[i];
 								}
 								else
 								{
@@ -629,7 +647,7 @@
 						});
 						
 						$(".busDiv").mouseout(function() {
-							$(this).css("background", "blue");
+							$(this).css("background", "steelblue");
 						});
 
 						$(".busOutlierDiv").mouseout(function() {
@@ -668,7 +686,7 @@
 								{
 									vis.selectAll("path.line").remove();
 									loadPtsOutliers(true, d.value['BusId'], false);
-									loadPtsRaw(true, false, false);
+									loadPtsRaw(true, true, false, d.value['BusId']);
 
 									$("#outlierinfo").html("<b>Selected outlier:</b><br>"+
 										"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
@@ -822,19 +840,6 @@
 			bounds.extend(new google.maps.LatLng(+min_latitude_bounding, +min_longitude_bounding));
 			map.setCenter(new google.maps.LatLng((+min_latitude_bounding + +max_latitude_bounding)/2, (+min_longitude_bounding + +max_longitude_bounding)/2));
 			map.fitBounds(bounds);
-			/*if (rectangle != null)
-				rectangle.setMap(null);
-			rectangle = new google.maps.Rectangle({
-				strokeColor: '#FF0000',
-				strokeOpacity: 0.8,
-				strokeWeight: 2,
-				fillColor: '#FF0000',
-				fillOpacity: 0.35,
-				map: map,
-				bounds: new google.maps.LatLngBounds(
-					new google.maps.LatLng(max_latitude_bounding, max_longitude_bounding),
-					new google.maps.LatLng(min_latitude_bounding, min_longitude_bounding))
-			});*/
 		}
 		
 		overlay_outliers.onAdd = function() {
@@ -891,7 +896,7 @@
 										   .on("click", function(d, i) {
 												vis.selectAll("path.line").remove();
 												loadPtsOutliers(true, d.value['BusId'], false);
-												loadPtsRaw(true, false, false);
+												loadPtsRaw(true, true, false, d.value['BusId']);
                                                
                                                 $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
 													"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
@@ -1527,6 +1532,7 @@
 			
 		}
         
+        //TIME FILTER
         //force reset of slide bars
         //document.getElementById("inputStartTime").value = 0;
         //document.getElementById("inputTimeRange").value = 1439;
@@ -1586,7 +1592,7 @@
 			endMinute = Math.floor(endTime%60);
 			document.getElementById("valEndTime").innerHTML = format2digits(endHour) + ":" + format2digits(endMinute);
             
-        }    
+        }
 		
         loadOutliersPerDay();
 		loadLstboxFromOutliers();
