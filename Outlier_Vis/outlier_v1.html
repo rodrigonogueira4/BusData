@@ -122,6 +122,10 @@
 			font-size: 13px;
 		}
 		
+    .dot {
+      stroke: #000;
+    }
+
 		#sortLineBarChartDiv {
 			width: 285px;
 			left: 0px;
@@ -380,23 +384,23 @@
 		vis.append("svg:g")
 		   .attr("class","axis")
            .attr("transform", "translate(" + (MARGINS.left) + ", " + (0) + ")")
-           .call(yAxis);
+        //   .call(yAxis);
     
 		//Create X axis label   
 		vis.append("svg:text")
 		.attr("x", WIDTH / 2 )
         .attr("y",  HEIGHT+20 )
         .style("text-anchor", "middle")
-        .text("Time");
+        .text("Trip Time (in normalized minutes)");
     
         //Create Y axis label
-        vis.append("svg:text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 10)
-        .attr("x",0 - (HEIGHT / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Distance"); 
+        //vis.append("svg:text")
+        //.attr("transform", "rotate(-90)")
+        //.attr("y", 10)
+        //.attr("x",0 - (HEIGHT / 2))
+        //.attr("dy", "1em")
+        //.style("text-anchor", "middle")
+        //.text("Distance"); 
 
         var lineGenOutlier = d3.svg.line()
 							   .x(function(d) {
@@ -1099,6 +1103,7 @@
 									outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
 									outliersfileArray = [outliersfile];
 									loadLstboxFromOutliers();
+                  
 								 })
 					.on("mouseover", function(d, i) {
 										d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
@@ -1124,7 +1129,37 @@
 				}
 			}
 		}
-			
+		
+    function loadTripTimes() {
+      var trip_times = [];
+      var trip_directions = [];
+      var trip_bus_ids = [];
+      for (idx in raw_data) {
+        trip_bus_ids.push(raw_data[idx][3]);
+        trip_directions.push(raw_data[idx][14]);
+        trip_times.push(raw_data[idx][13]);
+      }
+      //alert(trip_times);
+
+     // alert(vis);
+
+    /*vis.append('svg:circle')
+        .attr("class", "dot")
+        .attr("r", 3.5)
+        .attr("cx", 85)
+        .attr("cy", 275)
+        .style("fill", "cornflowerblue");*/
+
+      for(var i = 0; i < trip_times.length; i++) {
+       //alert(i); 		
+       vis.append('svg:circle')
+        .attr("class", "dot")
+        .attr("r", 3.5)
+        .attr("cx", 85 + trip_times[i])
+        .attr("cy", 275)
+        .style("fill", "cornflowerblue"); 
+      }
+	  }
 		function loadPtsOutliers(plotTemporalChart, busID, redrawPoints) {
             
             //erase selected oulier div
@@ -1461,6 +1496,7 @@
 									d3.select(this).style({fill: 'red'});
 									selectedLines = [d.key];
 									loadPts();
+                  loadTripTimes();
 								 })
 					.on("mouseover", function(d, i) {
 										d3.select(this).style({opacity: '0.6'});
