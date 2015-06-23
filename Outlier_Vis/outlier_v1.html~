@@ -271,18 +271,22 @@
         
         $('#multiInlinePicker').click(function() {
             date = $('#multiInlinePicker').datepick('getDate');
-            console.log(date.length);
-                
+            console.log(date);
             outliersfileArray = [];
             for (var i = 0; i < date.length; i++){
-                datei = date[i]; //get only the last selected day by now
-                day = datei.getDate();
-                month = datei.getMonth() + 1;
-                year = datei.getFullYear();
+                date = date[i]; //get only the last selected day by now
+                day = date.getDate();
+                month = date.getMonth() + 1;
+                year = date.getFullYear();
+                //console.log(day);
+                //console.log(month);
                 dateFile = day + "-" + month +  "-" + year;
                 outliersfile = "outliers/" + day + "_" + month + ".csv";
-                outliersfileArray.push(outliersfile);   
+                //if (outliersfileArray.indexOf(outliersfile) == -1)
+                outliersfileArray.push(outliersfile);
+                
             }
+            console.log("fewfwe"+outliersfileArray);
             loadLstboxFromOutliers();
             loadPts();
         })
@@ -1180,7 +1184,9 @@
 				for (row in data) {
 					var minreftime = parseDate(data[row]['TimeStamp_19']); 
 					var maxreftime = parseDate(data[row]['TimeStamp_0']); 
-     
+                    //console.log("starttime: " + data[row]['TimeStamp_19']);
+                    //console.log("endtime: " + data[row]['TimeStamp_0']);
+                    
 					for (i = 19; i>=0; i--){
 						var timestamp = parseDate(data[row]['TimeStamp_' + i]);
                       
@@ -1421,11 +1427,14 @@
 				}
 				
 				var barchart_data = [];
-			
+				var max = 0;
                 //first remove previous bars
             
-                for (line in lines_outliers){
+                for (line in lines_outliers)
+				{
         	        barchart_data.push({key: line, number_of_outliers: Object.keys(lines_outliers[line]).length});
+					if (Math.log(Object.keys(lines_outliers[line]).length) > max)
+						max = Math.log(Object.keys(lines_outliers[line]).length);
 				}
 				
 				if (sortLineBarChartByNumberOfOutliers)
@@ -1438,7 +1447,7 @@
 					barHeight = 20;
 
 				var x = d3.scale.linear()
-					.domain([0, d3.max(barchart_data, function(d) { return d.number_of_outliers; })])
+					.domain([0, d3.max(barchart_data, function(d) { return Math.log(d.number_of_outliers); })])
 					.range([0, width]);
            
 				var chart = d3.select(".barchart")
@@ -1451,7 +1460,7 @@
 					.attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
 
 				bar.append("rect")
-					.attr("width",  function(d) { return Math.max(70, x(d.number_of_outliers)); })
+					.attr("width",  function(d) { return Math.max(45, x(d.number_of_outliers)); })
 					.attr("height", barHeight - 1)
 					.on("click", function(d, i) {
 									d3.select(".selected").style({fill: "steelblue"});
@@ -1470,7 +1479,7 @@
 									 });
 
 				bar.append("text")
-					.attr("x", function(d) { return (d.key).length * 5.5 + 2; })
+					.attr("x", function(d) { return Math.log((d.key).length * 5.5 + 2); })
 					.attr("y", barHeight / 2)
 					.attr("dy", ".35em")
 					.text(function(d) { return d.key; })
@@ -1492,7 +1501,7 @@
 									 });
 
 				bar.append("text")
-					.attr("x", function(d) { return Math.max(68, x(d.number_of_outliers) - 3); })
+					.attr("x", function(d) { return Math.max(42, x(d.number_of_outliers) - 3); })
 					.attr("y", barHeight / 2)
 					.attr("dy", ".35em")
 					.text(function(d) { return d.number_of_outliers; })
