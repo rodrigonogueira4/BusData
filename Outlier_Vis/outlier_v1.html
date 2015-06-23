@@ -534,7 +534,7 @@
 			if (redrawPoints)
 			{
 				overlay_raw.setMap(null);
-				raw_data = null;
+				raw_data = [];
 				raw_data_load_callback_count = selectedLines.length;
 			}
 			
@@ -671,9 +671,9 @@
 								if (d.value['BusId'] == line)
 								{
 									vis.selectAll("path.line").remove();
-									loadPtsOutliers(true, d.value['BusId'], false);
-									loadPtsRaw(true, false, false);
-
+									loadPtsOutliers(false, d.value['BusId'], false);
+									loadPtsRaw(false, false, false);
+                  
 									$("#outlierinfo").html("<b>Selected outlier:</b><br>"+
 										"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
 										"<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
@@ -774,7 +774,8 @@
                                     TimeStampEnd: selectedBuses2[raw_data[idx][3]][1],
                                     LatitudePonto: raw_data[idx][9],
                                     LongitudePonto: raw_data[idx][10],
-                                    Speed: raw_data[idx][13]
+                                    TripTime: raw_data[idx][13],
+                                    Direction: raw_data[idx][14],
                                    }
                             
 							data2[raw_data[idx][3]].push(item);
@@ -894,9 +895,9 @@
 										   .attr("class", "marker")
 										   .on("click", function(d, i) {
 												vis.selectAll("path.line").remove();
-												loadPtsOutliers(true, d.value['BusId'], false);
-												loadPtsRaw(true, false, false);
-                                               
+												loadPtsOutliers(false, d.value['BusId'], false);
+												loadPtsRaw(false, false, false);
+                        loadTripTimes(d);                       
                                                 $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
 													"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
 													"<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
@@ -1130,7 +1131,8 @@
 			}
 		}
 		
-    function loadTripTimes() {
+    function loadTripTimes(outlierBus) {
+      //alert(outlierBus.value["BusId"]);
       var trip_times = [];
       var trip_directions = [];
       var trip_bus_ids = [];
@@ -1139,25 +1141,24 @@
         trip_directions.push(raw_data[idx][14]);
         trip_times.push(raw_data[idx][13]);
       }
-      //alert(trip_times);
-
-     // alert(vis);
-
-    /*vis.append('svg:circle')
-        .attr("class", "dot")
-        .attr("r", 3.5)
-        .attr("cx", 85)
-        .attr("cy", 275)
-        .style("fill", "cornflowerblue");*/
 
       for(var i = 0; i < trip_times.length; i++) {
-       //alert(i); 		
-       vis.append('svg:circle')
-        .attr("class", "dot")
-        .attr("r", 3.5)
-        .attr("cx", 85 + trip_times[i])
-        .attr("cy", 275)
-        .style("fill", "cornflowerblue"); 
+       console.log(trip_bus_ids[i] + " " + outlierBus.value["BusId"]);
+       if(trip_bus_ids[i] == outlierBus.value["BusId"]) {
+         vis.append('svg:circle')
+          .attr("class", "dot")
+          .attr("r", 3.5)
+          .attr("cx", 85 + (trip_times[i]/5))
+          .attr("cy", 275)
+          .style("fill", "red"); 
+       } else {
+         vis.append('svg:circle')
+          .attr("class", "dot")
+          .attr("r", 3.5)
+          .attr("cx", 85 + (trip_times[i]/5))
+          .attr("cy", 275)
+          .style("fill", "cornflowerblue");
+       } 
       }
 	  }
 		function loadPtsOutliers(plotTemporalChart, busID, redrawPoints) {
@@ -1496,7 +1497,7 @@
 									d3.select(this).style({fill: 'red'});
 									selectedLines = [d.key];
 									loadPts();
-                  loadTripTimes();
+                  //loadTripTimes();
 								 })
 					.on("mouseover", function(d, i) {
 										d3.select(this).style({opacity: '0.6'});
