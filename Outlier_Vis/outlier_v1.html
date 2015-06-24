@@ -122,6 +122,10 @@
 			font-size: 13px;
 		}
 		
+    .dot {
+      stroke: #000;
+    }
+
 		#sortLineBarChartDiv {
 			width: 285px;
 			left: 0px;
@@ -382,23 +386,23 @@
 		vis.append("svg:g")
 		   .attr("class","axis")
            .attr("transform", "translate(" + (MARGINS.left) + ", " + (0) + ")")
-           .call(yAxis);
+        //   .call(yAxis);
     
 		//Create X axis label   
 		vis.append("svg:text")
 		.attr("x", WIDTH / 2 )
         .attr("y",  HEIGHT+20 )
         .style("text-anchor", "middle")
-        .text("Time");
+        .text("Trip Time (in normalized minutes)");
     
         //Create Y axis label
-        vis.append("svg:text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 10)
-        .attr("x",0 - (HEIGHT / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Distance"); 
+        //vis.append("svg:text")
+        //.attr("transform", "rotate(-90)")
+        //.attr("y", 10)
+        //.attr("x",0 - (HEIGHT / 2))
+        //.attr("dy", "1em")
+        //.style("text-anchor", "middle")
+        //.text("Distance"); 
 
         var lineGenOutlier = d3.svg.line()
 							   .x(function(d) {
@@ -535,7 +539,7 @@
 			if (redrawPoints)
 			{
 				overlay_raw.setMap(null);
-				raw_data = null;
+				raw_data = [];
 				raw_data_load_callback_count = selectedLines.length;
 			}
 			
@@ -684,9 +688,15 @@
 								if (d.value['BusId'] == line)
 								{
 									vis.selectAll("path.line").remove();
+<<<<<<< HEAD
 									loadPtsOutliers(true, d.value['BusId'], false);
 									loadPtsRaw(true, true, false, d.value['BusId']);
 
+=======
+									loadPtsOutliers(false, d.value['BusId'], false);
+									loadPtsRaw(false, false, false);
+                  
+>>>>>>> 6670ad1bc2295f144dae40176f48e5d5de25f62a
 									$("#outlierinfo").html("<b>Selected outlier:</b><br>"+
 										"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
 										"<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
@@ -787,7 +797,8 @@
                                     TimeStampEnd: selectedBuses2[raw_data[idx][3]][1],
                                     LatitudePonto: raw_data[idx][9],
                                     LongitudePonto: raw_data[idx][10],
-                                    Speed: raw_data[idx][13]
+                                    TripTime: raw_data[idx][13],
+                                    Direction: raw_data[idx][14],
                                    }
                             
 							data2[raw_data[idx][3]].push(item);
@@ -894,9 +905,15 @@
 										   .attr("class", "marker")
 										   .on("click", function(d, i) {
 												vis.selectAll("path.line").remove();
+<<<<<<< HEAD
 												loadPtsOutliers(true, d.value['BusId'], false);
 												loadPtsRaw(true, true, false, d.value['BusId']);
                                                
+=======
+												loadPtsOutliers(false, d.value['BusId'], false);
+												loadPtsRaw(false, false, false);
+                        loadTripTimes(d);                       
+>>>>>>> 6670ad1bc2295f144dae40176f48e5d5de25f62a
                                                 $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
 													"<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
 													"<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
@@ -1103,6 +1120,7 @@
 									outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
 									outliersfileArray = [outliersfile];
 									loadLstboxFromOutliers();
+                  
 								 })
 					.on("mouseover", function(d, i) {
 										d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
@@ -1128,7 +1146,37 @@
 				}
 			}
 		}
-			
+		
+    function loadTripTimes(outlierBus) {
+      //alert(outlierBus.value["BusId"]);
+      var trip_times = [];
+      var trip_directions = [];
+      var trip_bus_ids = [];
+      for (idx in raw_data) {
+        trip_bus_ids.push(raw_data[idx][3]);
+        trip_directions.push(raw_data[idx][14]);
+        trip_times.push(raw_data[idx][13]);
+      }
+
+      for(var i = 0; i < trip_times.length; i++) {
+       console.log(trip_bus_ids[i] + " " + outlierBus.value["BusId"]);
+       if(trip_bus_ids[i] == outlierBus.value["BusId"]) {
+         vis.append('svg:circle')
+          .attr("class", "dot")
+          .attr("r", 3.5)
+          .attr("cx", 85 + (trip_times[i]/5))
+          .attr("cy", 275)
+          .style("fill", "red"); 
+       } else {
+         vis.append('svg:circle')
+          .attr("class", "dot")
+          .attr("r", 3.5)
+          .attr("cx", 85 + (trip_times[i]/5))
+          .attr("cy", 275)
+          .style("fill", "cornflowerblue");
+       } 
+      }
+	  }
 		function loadPtsOutliers(plotTemporalChart, busID, redrawPoints) {
             
             //erase selected oulier div
@@ -1465,6 +1513,7 @@
 									d3.select(this).style({fill: 'red'});
 									selectedLines = [d.key];
 									loadPts();
+                  //loadTripTimes();
 								 })
 					.on("mouseover", function(d, i) {
 										d3.select(this).style({opacity: '0.6'});
