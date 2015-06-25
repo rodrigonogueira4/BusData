@@ -152,7 +152,7 @@
             height: 100px;
             position: absolute; /*newly added*/
             right: 20px; /*newly added*/
-            bottom: -210px;/*newly added*/
+            bottom: -170px;/*newly added*/
             z-index: 100;
         }		
 
@@ -450,14 +450,14 @@
 			{
                 $('#timedatediv').hide();
 				$("#hideDayBarChart").html(">");
-                $('#outlierinfo').css('bottom', '250px');
+                $('#outlierinfo').css('bottom', '290px');
                 //$('#outlierinfo').redraw();
 			}
 			else
 			{
                 $('#timedatediv').show();
 				$("#hideDayBarChart").html("<");
-                $('#outlierinfo').css('bottom', '-210px');
+                $('#outlierinfo').css('bottom', '-170px');
 			}
 		});
 	
@@ -538,7 +538,7 @@
 			raw_markers = [];
 		};
         
-		function loadPtsRaw(plotTemporalChart, redrawPoints, reloadIndividualBuses, BusId) {
+		function loadPtsRaw(plotTemporalChart, redrawPoints, reloadIndividualBuses) {
 			if (redrawPoints)
 			{
 				overlay_raw.setMap(null);
@@ -567,17 +567,6 @@
 					{
 						raw_data = raw_data.concat(full_data[j]);
 					}
-                    
-                    //if specific bus is seleted, select only the raw data from this bus
-                    //console.log("BusId",BusId);
-                    if (BusId){
-                        raw_data = raw_data.filter(function(row,index) {
-                            if (row[3] != BusId) {
-                                return false;
-                            }
-                            return true;
-                        });
-                    }
                     
 					//do sampling
 					var samplingRate = Math.floor(raw_data.length/maxPts);
@@ -681,7 +670,7 @@
 						$(".busOutlierDiv").click(function() {
 							listOfSelectedBuses = [$(this).html()];
 
-							$(".marker2").remove(); //remove paths between outliers
+							$(".marker2").remove(); //remove lines/paths between outliers
 
 							d3.select(".busselected").style({opacity: 0.4});
 							d3.select(".busselected").classed("busselected", false);
@@ -966,10 +955,9 @@
                             //}
 								return "";
 						});*/
-            $(".marker2").remove();
+            $(".marker2").remove(); //remove lines/paths between outliers
 			//if (selectedLines.length != 0 && $('#ConnectedPts').is(':checked')) {
             if (selectedLines.length != 0) {
-                //remove all lines
                 
                 var marker = outlier_data_layer.selectAll("svg2")
                                                .data(d3.entries(outlier_data))
