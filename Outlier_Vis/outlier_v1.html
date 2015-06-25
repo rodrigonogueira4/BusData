@@ -152,7 +152,7 @@
             height: 100px;
             position: absolute; /*newly added*/
             right: 20px; /*newly added*/
-            bottom: -170px;/*newly added*/
+            bottom: -210px;/*newly added*/
             z-index: 100;
         }		
 
@@ -270,7 +270,7 @@
         $("#outlierinfo").hide(); //start info box invisible
         
         $('#multiInlinePicker').datepick({ 
-            multiSelect: 30, monthsToShow: 1, monthsToStep: 1, 
+            multiSelect: 30, monthsToShow: 3, monthsToStep: 1, 
             defaultDate: '12/05/2013',
             prevText: 'Prev month', nextText: 'Next month'
             //onSelect:function(date){
@@ -450,14 +450,14 @@
 			{
                 $('#timedatediv').hide();
 				$("#hideDayBarChart").html(">");
-                $('#outlierinfo').css('bottom', '290px');
+                $('#outlierinfo').css('bottom', '250px');
                 //$('#outlierinfo').redraw();
 			}
 			else
 			{
                 $('#timedatediv').show();
 				$("#hideDayBarChart").html("<");
-                $('#outlierinfo').css('bottom', '-170px');
+                $('#outlierinfo').css('bottom', '-210px');
 			}
 		});
 	
@@ -538,7 +538,7 @@
 			raw_markers = [];
 		};
         
-		function loadPtsRaw(plotTemporalChart, redrawPoints, reloadIndividualBuses) {
+		function loadPtsRaw(plotTemporalChart, redrawPoints, reloadIndividualBuses, BusId) {
 			if (redrawPoints)
 			{
 				overlay_raw.setMap(null);
@@ -567,6 +567,17 @@
 					{
 						raw_data = raw_data.concat(full_data[j]);
 					}
+                    
+                    //if specific bus is seleted, select only the raw data from this bus
+                    //console.log("BusId",BusId);
+                    if (BusId){
+                        raw_data = raw_data.filter(function(row,index) {
+                            if (row[3] != BusId) {
+                                return false;
+                            }
+                            return true;
+                        });
+                    }
                     
 					//do sampling
 					var samplingRate = Math.floor(raw_data.length/maxPts);
@@ -670,7 +681,7 @@
 						$(".busOutlierDiv").click(function() {
 							listOfSelectedBuses = [$(this).html()];
 
-							$(".marker2").remove(); //remove lines/paths between outliers
+							$(".marker2").remove(); //remove paths between outliers
 
 							d3.select(".busselected").style({opacity: 0.4});
 							d3.select(".busselected").classed("busselected", false);
@@ -955,9 +966,10 @@
                             //}
 								return "";
 						});*/
-            $(".marker2").remove(); //remove lines/paths between outliers
+            $(".marker2").remove();
 			//if (selectedLines.length != 0 && $('#ConnectedPts').is(':checked')) {
             if (selectedLines.length != 0) {
+                //remove all lines
                 
                 var marker = outlier_data_layer.selectAll("svg2")
                                                .data(d3.entries(outlier_data))
@@ -1164,6 +1176,8 @@
           .attr("r", 3.5)
           .attr("cx", 85 + (trip_times[i]/5))
           .attr("cy", 275)
+          .on("mouseover", function(d, i) { d3.select(this).html("bla").style({"visibility": "visible"});})
+          .on("mouseout", function(d, i) { d3.select(this).html("bla").style({"visibility": "hidden"});})
           .style("fill", "red"); 
        } else {
          vis.append('svg:circle')
