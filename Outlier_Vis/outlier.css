@@ -117,7 +117,7 @@
     .dot {
         fill: blue;
         opacity: 0.4;
-        stroke: #000;
+        //stroke: black;
     }
 
     #sortLineBarChartDiv {

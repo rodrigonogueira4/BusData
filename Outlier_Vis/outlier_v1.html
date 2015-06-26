@@ -12,13 +12,13 @@
         <link rel="stylesheet" type="text/css" href="outlier.css"> 
     </head>
     <body>
-        <div style="width: 1500px;height: 200px;">
+        <div style="width: 1470px;height: 200px;">
             <div style="width: 150px;height: 200px;float: left;">
                 <font size="5">RioBusData</font>
                 <br>
                 <font size="3">Visualization of Outlier Buses in the City Rio de Janeiro</font>
             </div>
-            <div style="width: 700px;height: 200px;float: left;">
+            <div style="width: 670px;height: 200px;float: left;">
                 <div id="multiInlinePicker" ></div>
             </div>
             <div style="width: 600px;height: 200px;float: left;">
@@ -57,6 +57,7 @@
         var outliersfile = "outliers/5_12.csv";
         var outliersfileArray = ["outliers/5_12.csv"];
         var outliersperdayfile = "number_of_outliers_per_day.csv";
+        var outliersperdayhourlinefile = "number_of_outliers_per_day_hour_line.csv";
         var dateFileArray = ["5-12-2013"];
         var startHour;
         var startMinute;
@@ -701,32 +702,41 @@
         
         var timeBars = [];
         function loadTimeBarChart() {
-            var barchart_data = [];
-            d3.csv(outliersperdayfile, function(data) {
+            var timebarchart_data_dic = {};
+            d3.csv(outliersperdayhourlinefile, function(data) {
                 data.forEach(function(d) {
-                    barchart_data.push({key: d.Date, number_of_outliers: d.NumberOfOutliers});
+                    
+                    if (!(d.Hour in timebarchart_data_dic)){
+                        timebarchart_data_dic[d.Hour] = 0    
+                    }
+                    timebarchart_data_dic[d.Hour] += +d.NumberOfOutliers
                 });
-
-                barWidth = 20;
-                height = 179;
+                //convert to list
+                var timebarchart_data = [];
+                for (var hour in timebarchart_data_dic) {
+                    timebarchart_data.push({key: hour, number_of_outliers: timebarchart_data_dic[hour]});
+                    
+                }
+                barWidth = 30;
+                height = 192;
 
                 var y = d3.scale.linear()
-                    .domain([0, d3.max(barchart_data, function(d) { return Math.log(d.number_of_outliers)*1.05; })])
+                    .domain([0, d3.max(timebarchart_data, function(d) { return d.number_of_outliers*1.05; })])
                     .range([0, height]);
 
                 chart = d3.select("#timeBarchart")
-                                .attr("width", barWidth * barchart_data.length)
+                                .attr("width", barWidth * timebarchart_data.length)
                                 .attr("height", height);
 
                 bar = chart.selectAll("g")
-                                .data(barchart_data)
+                                .data(timebarchart_data)
                                 .enter().append("g")
-                                .attr("transform", function(d, i) { return "translate(" + i * barWidth + "," + (height - y(Math.log(d.number_of_outliers))) + ")"; });
+                                .attr("transform", function(d, i) { return "translate(" + i * barWidth + "," + (height - y(d.number_of_outliers)) + ")"; });
                                
                 timeBars.push(bar.append("rect")
                     .attr("height",  function(d) { return y(d.number_of_outliers); })
                     .attr("width", barWidth - 1)
-                    .on("click", function(d, i) {selectDay(d, this);})
+                    .on("click", function(d, i) {selectTime(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this).style({opacity: '0.6'});
                                         })
@@ -736,11 +746,11 @@
 
                 bar.append("text")
                     .attr("x", barWidth / 2)
-                    .attr("y", function (d) { y(Math.log(d.number_of_outliers)); })
+                    .attr("y", function (d) { y(d.number_of_outliers); })
                     .attr("dx", "0.5em")
-                    .attr("transform", function(d) { return "translate(0, " + (y(Math.log(d.number_of_outliers)) - 3) + ")"; })
+                    .attr("transform", function(d) { return "translate(0, " + (y(d.number_of_outliers) - 3) + ")"; })
                     .text(function(d) { return d.key; })
-                    .on("click", function(d, i) {selectDay(d, this);})
+                    .on("click", function(d, i) {selectTime(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
                                         })
@@ -753,7 +763,7 @@
                     .attr("y", function (d) { y(d.number_of_outliers); })
                     .attr("dx", ".8em")
                     .text(function(d) { return d.number_of_outliers; })
-                    .on("click", function(d, i) {selectDay(d, this);})
+                    .on("click", function(d, i) {selectTime(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
                                         })
@@ -770,28 +780,43 @@
             chart = d3.select("#tripchart");
             chart.selectAll(".dot").remove(); //remove all dots in the chart
             chart.selectAll(".xlabel").remove(); //remove X labels
-            
-            for (i in outlierBuses){
-                for (idx in raw_data) {
-                    trip_bus_id = raw_data[idx][3];
-                    //trip_direction = raw_data[idx][14];
-                    trip_time = raw_data[idx][13];
+            outlierBuses2 = ["All"].concat(outlierBuses);
                 
-                    if(trip_bus_id == outlierBuses[i]) {
-                      
+            //group trips by bus and trip
+            trips = [];
+            bus_dir = {};
+            for (idx in raw_data) {
+                bus_id = raw_data[idx][3];
+                trip_time = raw_data[idx][13];
+                direction = raw_data[idx][14];
+                if (!(bus_id in bus_dir)){
+                    bus_dir[bus_id] = "";
+                }
+                if (direction != bus_dir[bus_id]){
+                    trips.push([bus_id, trip_time, direction]);
+                    bus_dir[bus_id] = direction;
+                }
+            }
+            for (i in outlierBuses2){
+                for (idx in trips) {
+                    trip_bus_id = trips[idx][0];
+                    trip_time = trips[idx][1];
+                
+                    if(trip_bus_id == outlierBuses2[i]) {
                         chart.append('svg:circle')
                         .attr("class", "dot")
                         .attr("r", 4.5)
-                        .attr("cy", 275-(trip_time/2))
+                        .attr("cy", 275-(trip_time/4))
                         .attr("cx", 100 + 80*i)
                         .on("mouseover", function(d, i) { d3.select(this).html("bla").style({"visibility": "visible"});})
                         .on("mouseout", function(d, i) { d3.select(this).html("bla").style({"visibility": "hidden"});})
+                        .style("opacity", "1.0")
                         .style("fill", "red"); 
                     } else {
                         chart.append('svg:circle')
                         .attr("class", "dot")
                         .attr("r", 4.5)
-                        .attr("cy", 275-(trip_time/2))
+                        .attr("cy", 275-(trip_time/4))
                         .attr("cx", 100 + 80*i)
                         .style("opacity", "0.4")
                         .style("fill", "blue");
@@ -805,18 +830,8 @@
                     .attr("class", "xlabel")
                     .style("text-anchor", "middle")
                     .attr("font-size", "12px")
-                    .text(outlierBuses[i]);
+                    .text(outlierBuses2[i]);
             }
-            
-
-            //Create X axis label   
-            chart.append("svg:text")
-                .attr("x", 100 + 80*i )
-                .attr("y",  320 )
-                .attr("class", "xlabel")
-                .style("text-anchor", "middle")
-                .attr("font-size", "12px")
-                .text(outlierBuses[i]);
             
         }
         function loadPtsOutliers(busID, redrawPoints) {
@@ -1094,7 +1109,6 @@
                 else
                     barchart_data.sort(sortByLabel);
 
-                
                 //add "All"
                 var width = 280,
                     barHeight = 20;
