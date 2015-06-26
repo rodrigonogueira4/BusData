@@ -148,19 +148,14 @@
         position: relative;
         top: 0;
         left: 0;
-
         height: 18px;
         width: 18px;
-
         background: steelblue;
         color: white;
-
         border: 1px solid black;
         padding-left: 1px;
         padding-right: 1px;
-
         text-align: center;
-
         cursor: default;
     }
 
