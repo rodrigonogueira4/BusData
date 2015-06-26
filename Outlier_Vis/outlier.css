@@ -1,0 +1,167 @@
+<style type="text/css">
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      width: 100%;
+      height:700px;
+      margin: 0;
+      padding: 0;
+    }
+    .rawpt, .rawpt svg {
+      position: absolute;
+    }
+
+    .rawpt svg {
+      width: 60px;
+      height: 20px;
+      padding-right: 100px;
+      font: 10px sans-serif;
+      z-index: 2;
+    }
+
+    .rawpt circle {
+      fill: blue;
+      opacity: 0.4;
+    }
+
+    .outliers, .outliers svg {
+      position: absolute;
+    }
+
+    .outliers svg {
+      width: 1000px;
+      height: 1000px;
+      padding-right: 100px;
+      font: 10px sans-serif;
+      z-index: 3;
+    }
+
+    .connectionline {
+      z-index: 1;
+      stroke: red;
+      stroke-width: 1;
+    }
+    .outliers circle {
+      fill: red;
+      stroke: black;
+      stroke-width: 0.2px;
+    }
+    .axis path {
+        fill: none;
+        stroke: #777;
+        shape-rendering: crispEdges;
+    }
+    .axis text {
+        font-family: Lato;
+        font-size: 13px;
+    }
+
+    .barchart rect {
+        fill: steelblue;
+    }
+
+    .barchart text {
+        fill: white;
+        font: 10px sans-serif;
+        text-anchor: end;
+    }
+
+    .sortLineBarChartDiv {
+        position: fixed;
+        left: 0px;
+    }
+
+    .barchartDiv {
+        float: left;
+        overflow-y: scroll;
+        height: 580px;
+        width: 300px;
+    }
+
+    .verticalBarchartDiv {
+        overflow-x: scroll;
+        height: 200px;
+        width: 1263px;
+    }
+
+    .verticalBarchart rect {
+        fill: steelblue;
+    }
+
+    .verticalBarchart text {
+        fill: black;
+        font: 10px sans-serif;
+        text-anchor: end;
+    }
+
+    .axis path {
+        fill: none;
+        stroke: #777;
+        shape-rendering: crispEdges;
+    }
+    .axis text {
+        font-family: Lato;
+        font-size: 13px;
+    }
+
+    .dot {
+    stroke: #000;
+    }
+
+    #sortLineBarChartDiv {
+        width: 285px;
+        left: 0px;
+    }
+
+    #busesOfLine {
+        float: left;
+        position: relative;
+        overflow-y: scroll;
+        width: 100px;
+        height: 580px;
+        cursor: default;
+        margin: 0;
+    }
+
+    #outlierinfo {
+        background-color: #F0F0F0;
+        border-radius: 25px;
+        border: 2px solid steelblue;
+        padding: 20px; 
+        width: 200px;
+        height: 100px;
+        position: absolute; /*newly added*/
+        right: 20px; /*newly added*/
+        bottom: -150px;/*newly added*/
+        z-index: 100;
+    }		
+
+    #canvastime {
+        border: 2px solid black;
+    }
+    #hideDayBarChart {
+        position: relative;
+        top: 0;
+        left: 0;
+
+        height: 18px;
+        width: 18px;
+
+        background: steelblue;
+        color: white;
+
+        border: 1px solid black;
+        padding-left: 1px;
+        padding-right: 1px;
+
+        text-align: center;
+
+        cursor: default;
+    }
+
+</style>
