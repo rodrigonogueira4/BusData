@@ -71,11 +71,6 @@
         text-anchor: end;
     }
 
-    .sortLineBarChartDiv {
-        position: fixed;
-        left: 0px;
-    }
-
     .barchartDiv {
         float: left;
         overflow-y: scroll;
@@ -83,17 +78,27 @@
         width: 300px;
     }
 
-    .verticalBarchartDiv {
+    #dayChartDiv {
         overflow-x: scroll;
         height: 200px;
         width: 1263px;
     }
 
-    .verticalBarchart rect {
+    #dayBarchart rect {
         fill: steelblue;
     }
 
-    .verticalBarchart text {
+    #dayBarchart text {
+        fill: black;
+        font: 9px sans-serif;
+        text-anchor: end;
+    }
+
+    #timeBarchart rect {
+        fill: steelblue;
+    }
+
+    #timeBarchart text {
         fill: black;
         font: 10px sans-serif;
         text-anchor: end;
@@ -110,7 +115,9 @@
     }
 
     .dot {
-    stroke: #000;
+        fill: blue;
+        opacity: 0.4;
+        stroke: #000;
     }
 
     #sortLineBarChartDiv {

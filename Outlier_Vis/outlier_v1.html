@@ -12,44 +12,44 @@
         <link rel="stylesheet" type="text/css" href="outlier.css"> 
     </head>
     <body>
-        <div style="width: 800px;height: 200px;">
+        <div style="width: 1500px;height: 200px;">
             <div style="width: 150px;height: 200px;float: left;">
                 <font size="5">RioBusData</font>
                 <br>
                 <font size="3">Visualization of Outlier Buses in the City Rio de Janeiro</font>
             </div>
-            <div style="width: 600px;height: 200px;float: Right;">
+            <div style="width: 700px;height: 200px;float: left;">
                 <div id="multiInlinePicker" ></div>
+            </div>
+            <div style="width: 600px;height: 200px;float: left;">
+                <svg id="timeBarchart"></svg>
             </div>
         </div>
        
-        <center>
-            <div id="dayChart" class="verticalBarchartDiv">
-                <svg class="verticalBarchart"></svg>
+        <!---<center>
+            <div id="dayChartDiv">
+                <svg id="dayBarchart"></svg>
             </div>
-        </center>
+        </center>-->
         <br> 
         <div style="width: 100%; height: 600px; overflow: hidden;">
-            
             <!--<div id="sortLineBarChartDiv"><button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort by number of outliers</button></div>-->
-            <div id="sortLineBarChartDiv"><input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()">Sort by number of outliers</input></div>
+            <div id="sortLineBarChartDiv">
+                <input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()" />
+                <label for="sortLineBarChart">Sort by number of outliers</label>
+            </div>
             <div class="barchartDiv">
                 <svg class="barchart"></svg>
             </div>
             <div id="busesOfLine"></div>
-            <div style="margin-left: 400px;"> <div id="map" style="height: 600px"></div> </div> 
+            <div style="margin-left: 400px;">
+                <div id="map" style="height: 600px"></div>
+            </div> 
         </div>
         <div style="width: 100%; overflow: hidden;">
-            <div style="width: 600px; float: left;">
-                <div class="container">
-                    <div class="jumbotron">
-                        <svg id="visualization" width="1000" height="350"></svg>
-                    </div>
-                </div>
-            </div>
-        <div id="outlierinfo"></div>
+                <svg id="tripchart" width="1000" height="350"></svg>
         </div>    
-        
+        <div id="outlierinfo"></div>
     </body>
 
     <script type="text/javascript">
@@ -108,15 +108,15 @@
                 outliersfile = "outliers/" + day + "_" + month + ".csv";
                 outliersfileArray.push(outliersfile);   
             }
-            loadLstboxFromOutliers();
+            loadLstLines();
             loadPtsOutliers("", true);
         })
     </script>   
     <script type="text/javascript">
 
-    //Temporal Chart
-    var vis = d3.select("#visualization"),
-            WIDTH = 1000,
+    //Trip Time Chart
+    var vis = d3.select("#tripchart"),
+            WIDTH = 100,
             HEIGHT = 300,
             MARGINS = {
                 top: 20,
@@ -128,27 +128,27 @@
             yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.0, 0.4]),
             xAxis = d3.svg.axis()
                       .scale(xScale),
-                      //.tickFormat(d3.time.format("%H:%m")),
             yAxis = d3.svg.axis()
                       .scale(yScale)
                       .orient("left");
     
-        vis.append("svg:g")
-           .attr("class","axis")
-           .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
-           .call(xAxis);
+        //vis.append("svg:g")
+        //  .attr("class","axis")
+        //   .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+        //   .call(xAxis);
         vis.append("svg:g")
            .attr("class","axis")
            .attr("transform", "translate(" + (MARGINS.left) + ", " + (0) + ")")
-        //   .call(yAxis);
-    
-        //Create X axis label   
+           .call(yAxis);
+        
+        //Create Y axis label   
         vis.append("svg:text")
-        .attr("x", WIDTH / 2 )
-        .attr("y",  HEIGHT+20 )
+        .attr("x", -150 )
+        .attr("y",  25 )
         .style("text-anchor", "middle")
-        .text("Trip Time (in normalized minutes)");
-    
+        .attr("transform", "rotate(-90)")
+        .text("Trip Time (in minutes)");
+        
         function parseDate(datestr) {
             return Date.parse(datestr.substring(0, 19).replace(" ", "T"));
         }
@@ -345,7 +345,6 @@
                         
                         $(".busOutlierDiv").click(function() {
                             listOfSelectedBuses = [$(this).html()];
-
                             $(".marker2").remove(); //remove paths between outliers
 
                             d3.select(".busselected").style({opacity: 0.4});
@@ -377,6 +376,9 @@
                                 }
                             }
                         });
+                        
+                        //load trip-time chart. It must be inside the loadptsraw because the raw points are only loaded in the end of the function.
+                        loadTripTimes(listOfOutlierBuses);
                     }
 
           
@@ -635,7 +637,7 @@
                     .domain([0, d3.max(barchart_data, function(d) { return Math.log(d.number_of_outliers)*1.05; })])
                     .range([0, height]);
 
-                var chart = d3.select(".verticalBarchart")
+                var chart = d3.select("#dayBarchart")
                                 .attr("width", barWidth * barchart_data.length)
                                 .attr("height", height);
 
@@ -647,18 +649,7 @@
                 daysBars.push(bar.append("rect")
                     .attr("height",  function(d) { return y(d.number_of_outliers); })
                     .attr("width", barWidth - 1)
-                    .on("click", function(d, i) {
-                                    d3.select(".vselected").style({fill: "steelblue"});
-                                    d3.select(".vselected").classed("vselected", false);
-                                    d3.select(this).classed("vselected", true);
-                                    d3.select(this).style({fill: 'red'});
-                                    fields = d.key.split("/");
-                                    dateFileArray = [fields[1] + "-" + fields[0] + "-2013"];
-                                    outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
-                                    outliersfileArray = [outliersfile];
-                                    loadLstboxFromOutliers();
-                   
-                                 })
+                    .on("click", function(d, i) {selectDay(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this).style({opacity: '0.6'});
                                         })
@@ -672,17 +663,7 @@
                     .attr("dx", "1em")
                     .attr("transform", function(d) { return "translate(0, " + (y(Math.log(d.number_of_outliers)) - 3) + ")"; })
                     .text(function(d) { return d.key; })
-                    .on("click", function(d, i) {
-                                    d3.select(".vselected").style({fill: "steelblue"});
-                                    d3.select(".vselected").classed("vselected", false);
-                                    d3.select(this.parentNode).select("rect").classed("vselected", true);
-                                    d3.select(this.parentNode).select("rect").style({fill: 'red'});
-                                    fields = d.key.split("/");
-                                    dateFileArray = [fields[1] + "-" + fields[0] +  "-2013"];
-                                    outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
-                                    outliersfileArray = [outliersfile];
-                                    loadLstboxFromOutliers();
-                                 })
+                    .on("click", function(d, i) {selectDay(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
                                         })
@@ -695,18 +676,7 @@
                     .attr("y", function (d) { y(d.number_of_outliers); })
                     .attr("dx", ".8em")
                     .text(function(d) { return d.number_of_outliers; })
-                    .on("click", function(d, i) {
-                                    d3.select(".vselected").style({fill: "steelblue"});
-                                    d3.select(".vselected").classed("vselected", false);
-                                    d3.select(this.parentNode).select("rect").classed("vselected", true);
-                                    d3.select(this.parentNode).select("rect").style({fill: 'red'});
-                                    fields = d.key.split("/");
-                                    dateFileArray = [fields[1] + "-" + fields[0] + "-2013"];
-                                    outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
-                                    outliersfileArray = [outliersfile];
-                                    loadLstboxFromOutliers();
-                  
-                                 })
+                    .on("click", function(d, i) {selectDay(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
                                         })
@@ -717,59 +687,144 @@
             });
         }
         
-        function colorDefaultDay()
-        {
+        function colorDefaultDay(){
             for (var i=0; i<daysBars.length; i++)
                 daysBars[i].each(transform);
 
-            function transform(d)
-            {
-                if (d.key == "12/5")
-                {
+            function transform(d){
+                if (d.key == "12/5"){
                     d3.select(this).classed("vselected", true);
                     d3.select(this).style({fill: 'red'});
                 }
             }
         }
         
-    function loadTripTimes(outlierBus) {
-      var trip_times = [];
-      var trip_directions = [];
-      var trip_bus_ids = [];
-    
-      for (idx in raw_data) {
-        trip_bus_ids.push(raw_data[idx][3]);
-        trip_directions.push(raw_data[idx][14]);
-        trip_times.push(raw_data[idx][13]);
-      }
+        var timeBars = [];
+        function loadTimeBarChart() {
+            var barchart_data = [];
+            d3.csv(outliersperdayfile, function(data) {
+                data.forEach(function(d) {
+                    barchart_data.push({key: d.Date, number_of_outliers: d.NumberOfOutliers});
+                });
+
+                barWidth = 20;
+                height = 179;
+
+                var y = d3.scale.linear()
+                    .domain([0, d3.max(barchart_data, function(d) { return Math.log(d.number_of_outliers)*1.05; })])
+                    .range([0, height]);
+
+                chart = d3.select("#timeBarchart")
+                                .attr("width", barWidth * barchart_data.length)
+                                .attr("height", height);
+
+                bar = chart.selectAll("g")
+                                .data(barchart_data)
+                                .enter().append("g")
+                                .attr("transform", function(d, i) { return "translate(" + i * barWidth + "," + (height - y(Math.log(d.number_of_outliers))) + ")"; });
+                               
+                timeBars.push(bar.append("rect")
+                    .attr("height",  function(d) { return y(d.number_of_outliers); })
+                    .attr("width", barWidth - 1)
+                    .on("click", function(d, i) {selectDay(d, this);})
+                    .on("mouseover", function(d, i) {
+                                        d3.select(this).style({opacity: '0.6'});
+                                        })
+                    .on("mouseout", function(d, i) {
+                                        d3.select(this).style({opacity: '1.0'});
+                                     }));
+
+                bar.append("text")
+                    .attr("x", barWidth / 2)
+                    .attr("y", function (d) { y(Math.log(d.number_of_outliers)); })
+                    .attr("dx", "0.5em")
+                    .attr("transform", function(d) { return "translate(0, " + (y(Math.log(d.number_of_outliers)) - 3) + ")"; })
+                    .text(function(d) { return d.key; })
+                    .on("click", function(d, i) {selectDay(d, this);})
+                    .on("mouseover", function(d, i) {
+                                        d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
+                                        })
+                    .on("mouseout", function(d, i) {
+                                        d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
+                                     });
+                
+                bar.append("text")
+                    .attr("x", barWidth / 2)
+                    .attr("y", function (d) { y(d.number_of_outliers); })
+                    .attr("dx", ".8em")
+                    .text(function(d) { return d.number_of_outliers; })
+                    .on("click", function(d, i) {selectDay(d, this);})
+                    .on("mouseover", function(d, i) {
+                                        d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
+                                        })
+                    .on("mouseout", function(d, i) {
+                                        d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
+                                   });
+                //uncoment this
+                //colorDefaultDay();
+            });
+        }
         
-      for(var i = 0; i < trip_times.length; i++) {
-       if(trip_bus_ids[i] == outlierBus.value["BusId"]) {
-         vis.append('svg:circle')
-          .attr("class", "dot")
-          .attr("r", 3.5)
-          .attr("cx", 85 + (trip_times[i]/5))
-          .attr("cy", 275)
-          .on("mouseover", function(d, i) { d3.select(this).html("bla").style({"visibility": "visible"});})
-          .on("mouseout", function(d, i) { d3.select(this).html("bla").style({"visibility": "hidden"});})
-          .style("fill", "red"); 
-       } else {
-         vis.append('svg:circle')
-          .attr("class", "dot")
-          .attr("r", 3.5)
-          .attr("cx", 85 + (trip_times[i]/5))
-          .attr("cy", 275)
-          .style("fill", "cornflowerblue");
-       } 
-      }
-      }
+        
+        function loadTripTimes(outlierBuses) {
+            chart = d3.select("#tripchart");
+            chart.selectAll(".dot").remove(); //remove all dots in the chart
+            chart.selectAll(".xlabel").remove(); //remove X labels
+            
+            for (i in outlierBuses){
+                for (idx in raw_data) {
+                    trip_bus_id = raw_data[idx][3];
+                    //trip_direction = raw_data[idx][14];
+                    trip_time = raw_data[idx][13];
+                
+                    if(trip_bus_id == outlierBuses[i]) {
+                      
+                        chart.append('svg:circle')
+                        .attr("class", "dot")
+                        .attr("r", 4.5)
+                        .attr("cy", 275-(trip_time/2))
+                        .attr("cx", 100 + 80*i)
+                        .on("mouseover", function(d, i) { d3.select(this).html("bla").style({"visibility": "visible"});})
+                        .on("mouseout", function(d, i) { d3.select(this).html("bla").style({"visibility": "hidden"});})
+                        .style("fill", "red"); 
+                    } else {
+                        chart.append('svg:circle')
+                        .attr("class", "dot")
+                        .attr("r", 4.5)
+                        .attr("cy", 275-(trip_time/2))
+                        .attr("cx", 100 + 80*i)
+                        .style("opacity", "0.4")
+                        .style("fill", "blue");
+                    } 
+                }
+                
+                //Create X axis label   
+                chart.append("svg:text")
+                    .attr("x", 100 + 80*i )
+                    .attr("y",  320 )
+                    .attr("class", "xlabel")
+                    .style("text-anchor", "middle")
+                    .attr("font-size", "12px")
+                    .text(outlierBuses[i]);
+            }
+            
+
+            //Create X axis label   
+            chart.append("svg:text")
+                .attr("x", 100 + 80*i )
+                .attr("y",  320 )
+                .attr("class", "xlabel")
+                .style("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .text(outlierBuses[i]);
+            
+        }
         function loadPtsOutliers(busID, redrawPoints) {
             
             //hide selected oulier div
             $("#outlierinfo").hide();
             
-            if (redrawPoints)
-            {
+            if (redrawPoints){
                 overlay_outliers.setMap(null);
                 outlier_data = null;
                 
@@ -782,8 +837,7 @@
             var full_data = [];
             var count = outliersfileArray.length;
             
-            for (var i=0; i<outliersfileArray.length; i++)
-            {
+            for (var i=0; i<outliersfileArray.length; i++){
                 d3.csv(outliersfileArray[i], function(temp_data) {
                     full_data.push(temp_data);
                     
@@ -957,6 +1011,8 @@
                     overlay_outliers.setMap(map);
                     loadPtsRaw(true, true);
                 }
+                
+                
             }
         }
         
@@ -989,10 +1045,10 @@
                 sortLineBarChartByNumberOfOutliers = true;
                 //$("#btnSort").html('Sort by line name');
             }
-            loadLstboxFromOutliers();
+            loadLstLines();
         }
     
-        function loadLstboxFromOutliers() {
+        function loadLstLines() {
             //first, remove all existing bars in the bar chart
             d3.select(".barchart").selectAll("g").remove();
             
@@ -1013,8 +1069,7 @@
             }
             function loadData() {
                 var data = [];
-                for (var j=0; j<full_data.length; j++)
-                {
+                for (var j=0; j<full_data.length; j++){
                     data = data.concat(full_data[j]);
                 }
                 var lines_outliers = {};
@@ -1060,15 +1115,7 @@
                 bar.append("rect")
                     .attr("width",  function(d) { return Math.max(70, x(d.number_of_outliers)); })
                     .attr("height", barHeight - 1)
-                    .on("click", function(d, i) {
-                                    d3.select(".selected").style({fill: "steelblue"});
-                                    d3.select(".selected").classed("selected", false);
-
-                                    d3.select(this).classed("selected", true);
-                                    d3.select(this).style({fill: 'red'});
-                                    selectedLines = [d.key];
-                                    loadPtsOutliers("", true);
-                                 })
+                    .on("click", function(d, i) {selectLine(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this).style({opacity: '0.6'});
                                         })
@@ -1081,16 +1128,7 @@
                     .attr("y", barHeight / 2)
                     .attr("dy", ".35em")
                     .text(function(d) { return d.key; })
-                    .on("click", function(d, i) {
-                                    d3.select(".selected").style({fill: "steelblue"});
-                                    d3.select(".selected").classed("selected", false);
-
-                                    d3.select(this.parentNode).select("rect").style({fill: 'red'});
-                                    d3.select(this.parentNode).select("rect").classed("selected", true);
-                                    
-                                    selectedLines = [d.key];
-                                    loadPtsOutliers("", true);
-                                 })
+                    .on("click", function(d, i) {selectLine(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
                                         })
@@ -1103,30 +1141,43 @@
                     .attr("y", barHeight / 2)
                     .attr("dy", ".35em")
                     .text(function(d) { return d.number_of_outliers; })
-                    .on("click", function(d, i) {
-                                    d3.select(".selected").style({fill: "steelblue"});
-                                    d3.select(".selected").classed("selected", false);
-
-                                    d3.select(this.parentNode).select("rect").style({fill: 'red'});
-                                    d3.select(this.parentNode).select("rect").classed("selected", true);
-                                    
-                                    selectedLines = [d.key];
-                                    loadPtsOutliers("", true);
-                                 })
+                    .on("click", function(d, i) {selectLine(d, this);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
                                         })
                     .on("mouseout", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                      });
+                
             };
+        }
+        
+        function selectDay(d, refobj){
+            d3.select(".vselected").style({fill: "steelblue"});
+            d3.select(".vselected").classed("vselected", false);
+            d3.select(refobj).classed("vselected", true);
+            d3.select(refobj).style({fill: 'red'});
+            fields = d.key.split("/");
+            dateFileArray = [fields[1] + "-" + fields[0] + "-2013"];
+            outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
+            outliersfileArray = [outliersfile];
+            loadLstLines();
+        }
+        
+        function selectLine(d, refobj){
+            d3.select(".selected").style({fill: "steelblue"});
+            d3.select(".selected").classed("selected", false);
+            d3.select(refobj).classed("selected", true);
+            d3.select(refobj).style({fill: 'red'});
+            selectedLines = [d.key];
+            loadPtsOutliers("", true);
         }
         
         function selectBus(d){
             vis.selectAll("path.line").remove();
             loadPtsOutliers(d.value['BusId'], false);
             loadPtsRaw(false, false);
-            loadTripTimes(d);                       
+                                   
             $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
                 "<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
                 "<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
@@ -1134,12 +1185,14 @@
                 "<b>Bus Id:</b> " + d.value['BusId']);
             $("#outlierinfo").show();  
         }
+        
         function format2digits(n){
             return n > 9 ? "" + n: "0" + n;
         }
         
-        loadOutliersPerDay();
-        loadLstboxFromOutliers();
+        //loadOutliersPerDay();
+        loadTimeBarChart();
+        loadLstLines();
        
     </script>
 </html>
