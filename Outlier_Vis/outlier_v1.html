@@ -78,6 +78,7 @@
         var raw_data_layer;
         var raw_data_load_callback_count;
         var selectedLines = [];
+        var selectedBusId = ""; 
         var min_latitude_bounding = null;
         var max_latitude_bounding = null;
         var min_longitude_bounding = null;
@@ -111,7 +112,8 @@
             }
             loadTimeBarChart();
             loadLstLines();
-            loadPtsOutliers("", true);
+            selectedBusId = "";
+            loadPtsOutliers(true);
         })
     </script>   
     <script type="text/javascript">
@@ -351,7 +353,7 @@
                             d3.select(this).classed("busselected", true);
                             d3.select(this).style({opacity: 1.0});
                             
-                            var line = $(this).html();
+                            var busid = $(this).html();
 
                             for (var j=0; j<raw_markers.length; j++)
                                 raw_markers[j].each(transform);
@@ -365,8 +367,8 @@
                                 }
                             }
                             function transform2(d) {
-                                if (d.value['BusId'] == line){
-                                    selectBus(d);
+                                if (d.value['BusId'] == busid){
+                                    selectBus(d);  //CORRECT THIS, IT IS CALLING THE FUNCTION MULTIPLE TIMES
                                 }
                                 if (listOfSelectedBuses.indexOf(d.value["BusId"]) != -1){
                                     return d3.select(this).style("visibility", "visible");
@@ -470,13 +472,17 @@
                   .attr("cx", padding)
                   .attr("cy", padding);
             
-        
+            console.log("final:"+selectedBusId);
             $(".marker2").remove();
-            if (selectedLines.length != 0) {
-                //remove all lines
-                
+            if (selectedBusId != "") {
+                outlier_data_filtered = outlier_data.filter(function(row,index) {
+                    if (row['BusId'] == selectedBusId) {
+                        return true;
+                    }
+                    return false;
+                });
                 var marker = outlier_data_layer.selectAll("svg2")
-                                               .data(d3.entries(outlier_data))
+                                               .data(d3.entries(outlier_data_filtered))
                                                .style("z-index", 1)
                                                .each(
                                                   function (d) {
@@ -784,10 +790,9 @@
             }
             
         }
-        function loadPtsOutliers(busID, redrawPoints) {
+        function loadPtsOutliers(redrawPoints) {
             
-            //hide selected oulier div
-            $("#outlierinfo").hide();
+            $("#outlierinfo").hide(); //hide selected oulier div
             
             if (redrawPoints){
                 overlay_outliers.setMap(null);
@@ -945,6 +950,8 @@
                         listOfOutlierBuses.push(row["BusId"]);
                 });
                 
+                
+                /*
                 if(busID == "") {
                   //set the selected outlier var with the first point of the first outlier. Its timestamp and coordinates will be used so select raw points in the temporal chart
                   selectedOutlier = outlier_data[0];
@@ -992,7 +999,7 @@
                               }
                         }
                     }    
-                        }
+                }*/
                 
                 if (redrawPoints)
                 {
@@ -1039,7 +1046,7 @@
         function loadLstLines() {
             //first, remove all existing bars in the bar chart
             d3.select(".barchart").selectAll("g").remove();
-            loadPtsOutliers("", true);
+            loadPtsOutliers(true);
             
             d3.csv(outliersperdaylinefile, function(data) {
                 lines_outliers = {};
@@ -1141,6 +1148,7 @@
             dateFileArray = [fields[1] + "-" + fields[0] + "-2013"];
             outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
             outliersfileArray = [outliersfile];
+            selectedBusId = "";
             loadLstLines();
         }
         
@@ -1150,12 +1158,15 @@
             d3.select(refobj).classed("selected", true);
             d3.select(refobj).style({fill: 'red'});
             selectedLines = [d.key];
-            loadPtsOutliers("", true);
+            selectedBusId = ""; 
+            loadPtsOutliers(true);
         }
         
         function selectBus(d){
             vis.selectAll("path.line").remove();
-            loadPtsOutliers(d.value['BusId'], false);
+            selectedBusId = d.value['BusId']; 
+            console.log("selectedBusId"+selectedBusId);
+            loadPtsOutliers(false);
             loadPtsRaw(false, false);
                                    
             $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
