@@ -144,7 +144,7 @@
         height: 100px;
         position: absolute; /*newly added*/
         right: 20px; /*newly added*/
-        bottom: -150px;/*newly added*/
+        bottom: 120px;/*newly added*/
         z-index: 100;
     }		
 
