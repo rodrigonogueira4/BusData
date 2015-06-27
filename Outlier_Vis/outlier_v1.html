@@ -92,6 +92,7 @@
         $('#multiInlinePicker').datepick({ 
             multiSelect: 30, monthsToShow: 3, monthsToStep: 1, 
             defaultDate: '10/05/2013',
+			showOtherMonths: true,
             prevText: 'Prev month', nextText: 'Next month'
             //onSelect:function(date){
             //}
@@ -207,7 +208,7 @@
 			var offset = 864;
 			var prefix = "dp138";
 			var suffix = "00000";
-			for (var i=0; i<31; i++)
+			/*for (var i=0; i<31; i++)
 			{
 				//outliersDict[(i+1) + "_10"] = [prefix + (first + i * offset) + suffix, 0];
 				if ((first_october + i * offset) >= 10000)
@@ -224,20 +225,62 @@
 				}
 				
 				outliersDict[(i+1) + "_12"] = [prefix + (first_december + i * offset) + suffix, 0];
+			}*/
+			for (var i=0; i<31; i++)
+			{
+				//outliersDict[(i+1) + "_10"] = [prefix + (first + i * offset) + suffix, 0];
+				if ((first_october + i * offset) >= 10000)
+					outliersDict["10/" + (i+1)] = [prefix + (first_october + i * offset) + suffix, 0];
+				else
+					outliersDict["10/" + (i+1)] = [prefix + "0" + (first_october + i * offset) + suffix, 0];				
+				
+				if (i<30)
+				{
+					if (i<2)
+						outliersDict["11/" + (i+1)] = [prefix + (first_november + i * offset) + suffix, 0];
+					else
+						outliersDict["11/" + (i+1)] = [prefix + (third_november + (i-2) * offset) + suffix, 0];					
+				}
+				
+				outliersDict["12/" + (i+1)] = [prefix + (first_december + i * offset) + suffix, 0];
 			}
 		
 			daysCount = Object.keys(outliersDict).length;
 			min_outlier_value = -1;
 			max_outlier_value = -1;
 
-			for (key in outliersDict)
+			/*for (key in outliersDict)
 			{
 				loadDay(key);
-			}
+			}*/
+			loadDay();
 		}
-		function loadDay(key)
+		//function loadDay(key)
+		function loadDay()
 		{
-			d3.csv("outliers/" + key + ".csv", function(data) {
+			d3.csv("number_of_outliers_per_day.csv", function(data) {
+				for (key in outliersDict)
+				{
+					for (var i=0; i<data.length; i++)
+					{
+						if (key == data[i]["Date"])
+						{
+							outliersDict[key][1] = +data[i]["NumberOfOutliers"];
+							if (min_outlier_value == -1 || outliersDict[key][1] < min_outlier_value)
+							{
+								min_outlier_value = outliersDict[key][1];
+							}
+							if (max_outlier_value == -1 || outliersDict[key][1] > max_outlier_value)
+							{
+								max_outlier_value = outliersDict[key][1];
+							}
+							break;
+						}
+					}
+				}
+				loadedDict();
+			});
+			/*d3.csv("outliers/" + key + ".csv", function(data) {
 				if (data != null)
 				{
 					outliersDict[key][1] = data.length;
@@ -255,13 +298,56 @@
 				else
 					outliersDict[key][1] = 0;
 				if (!--daysCount) loadedDict();
-			});
+			});*/
 		}
+		var hsv2rgb = function(h, s, v) {
+			// adapted from http://schinckel.net/2012/01/10/hsv-to-rgb-in-javascript/
+			var rgb, i, data = [];
+			if (s === 0) {
+				rgb = [v,v,v];
+			}
+			else {
+				h = h / 60;
+				i = Math.floor(h);
+				data = [v*(1-s), v*(1-s*(h-i)), v*(1-s*(1-(h-i)))];
+				switch(i) {
+				  case 0:
+					rgb = [v, data[2], data[0]];
+					break;
+				  case 1:
+					rgb = [data[1], v, data[0]];
+					break;
+				  case 2:
+					rgb = [data[0], v, data[2]];
+					break;
+				  case 3:
+					rgb = [data[0], data[1], v];
+					break;
+				  case 4:
+					rgb = [data[2], data[0], v];
+					break;
+				  default:
+					rgb = [v, data[0], data[1]];
+					break;
+				}
+			}
+			return '#' + rgb.map(function(x){
+				return ("0" + Math.round(x*255).toString(16)).slice(-2);
+			}).join('');
+		}
+	
 		function loadedDict()
 		{
+			var color;
 			for (key in outliersDict)
 			{
-				$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + outliersDict[key][1] / max_outlier_value + ")"});
+				if (outliersDict[key][1] > 0)
+				{
+				//$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + outliersDict[key][1] / max_outlier_value + ")"});
+				//$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + ((outliersDict[key][1] / max_outlier_value) * 0.7) + ")"});
+					color = hsv2rgb(Math.floor((100 - ((outliersDict[key][1] / max_outlier_value) * 100)) * 120 / 100), Math.abs((((outliersDict[key][1] / max_outlier_value) * 100) - 50) / 50), 1);
+					$("." + outliersDict[key][0]).css({"background-color" : color});
+				}
 			}
 		}
 		
