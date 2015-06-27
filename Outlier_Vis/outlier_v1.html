@@ -132,7 +132,7 @@
                 left: 80
             },
             xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0, 1.0]),
-            yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([-0.0, 0.4]),
+            yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0,600]),
             xAxis = d3.svg.axis()
                       .scale(xScale),
             yAxis = d3.svg.axis()
@@ -318,10 +318,13 @@
                 for (var k=0; k<dateFileArray.length; k++)
                 {
                     d3.text("data_separated_by_line_and_day/" + selectedLines[i] + "/" + dateFileArray[k], function(text) {
-                        temp_data = d3.csv.parseRows(text);
-                        temp_data.shift();
-                        full_data.push(temp_data);
-                        if (!--count) loadData();
+						if (text != null)
+						{
+							temp_data = d3.csv.parseRows(text);
+							temp_data.shift();
+							full_data.push(temp_data);
+						}
+						if (!--count) loadData();
                     });
                 }
                 
@@ -864,6 +867,11 @@
                     .style("text-anchor", "middle")
                     .attr("font-size", "12px")
                     .text(outlierBuses2[i]);
+				
+				//var y = d3.scale.linear().domain([0,100]);
+				//var yAxis = d3.svg.axis().scale(y);
+				
+				//chart.yAxis.scale().domain([0,100]);
             }
             
         }
