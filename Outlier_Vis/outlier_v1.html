@@ -198,8 +198,7 @@
 		var min_outlier_value = -1;
 		var max_outlier_value = -1;
 		
-		function calendarColorMap()
-		{
+		function calendarColorMap(){
 			var first_october = 6432;
 			var first_november = 33216;
 			var third_november = 34980;
@@ -207,16 +206,14 @@
 			var offset = 864;
 			var prefix = "dp138";
 			var suffix = "00000";
-			for (var i=0; i<31; i++)
-			{
+			for (var i=0; i<31; i++){
 				//outliersDict[(i+1) + "_10"] = [prefix + (first + i * offset) + suffix, 0];
 				if ((first_october + i * offset) >= 10000)
 					outliersDict[(i+1) + "_10"] = [prefix + (first_october + i * offset) + suffix, 0];
 				else
 					outliersDict[(i+1) + "_10"] = [prefix + "0" + (first_october + i * offset) + suffix, 0];				
 				
-				if (i<30)
-				{
+				if (i<30){
 					if (i<2)
 						outliersDict[(i+1) + "_11"] = [prefix + (first_november + i * offset) + suffix, 0];
 					else
@@ -230,24 +227,19 @@
 			min_outlier_value = -1;
 			max_outlier_value = -1;
 
-			for (key in outliersDict)
-			{
+			for (key in outliersDict){
 				loadDay(key);
 			}
 		}
-		function loadDay(key)
-		{
+		function loadDay(key){
 			d3.csv("outliers/" + key + ".csv", function(data) {
-				if (data != null)
-				{
+				if (data != null){
 					outliersDict[key][1] = data.length;
 
-					if (min_outlier_value == -1 || outliersDict[key][1] < min_outlier_value)
-					{
+					if (min_outlier_value == -1 || outliersDict[key][1] < min_outlier_value){
 						min_outlier_value = outliersDict[key][1];
 					}
-					if (max_outlier_value == -1 || outliersDict[key][1] > max_outlier_value)
-					{
+					if (max_outlier_value == -1 || outliersDict[key][1] > max_outlier_value){
 						max_outlier_value = outliersDict[key][1];
 					}
 					
@@ -257,10 +249,9 @@
 				if (!--daysCount) loadedDict();
 			});
 		}
-		function loadedDict()
-		{
-			for (key in outliersDict)
-			{
+        
+		function loadedDict(){
+			for (key in outliersDict){
 				$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + outliersDict[key][1] / max_outlier_value + ")"});
 			}
 		}
