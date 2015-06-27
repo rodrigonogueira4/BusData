@@ -294,8 +294,7 @@
                             listOfBuses.push(row[3]);
                     });
                     
-                    if (reloadIndividualBuses)
-                    {
+                    if (reloadIndividualBuses){
                         var div_list = document.getElementById("busesOfLine");
                         div_list.innerHTML = "";
                         
@@ -382,92 +381,16 @@
                         loadTripTimes(listOfOutlierBuses);
                     }
 
-          
-            //select buses for temporal chart comparison. Select buses that are close to the start point of the outlier
-                    
-            if (selectedOutlier != null){
-            //select buses based on start latlong
-            selectedBuses = {}
-            for (idx in raw_data){
-                var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatStart,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongStart, 2),0.5);
-                if (dist < MAX_DIST){                
-                  selectedBuses[raw_data[idx][3]] = raw_data[idx][11]; //put start timestamp here 
-                }
-            }
-            //select buses based on end latlong
-            selectedBuses2 = {}
-            for (idx in raw_data){
-                if (raw_data[idx][3] in selectedBuses) {
-                   var dist = Math.pow(Math.pow(+raw_data[idx][9] - selectedOutlier.LatEnd,2) + Math.pow(+raw_data[idx][10] - selectedOutlier.LongEnd, 2), 0.5);
-                    if (dist < MAX_DIST){
-                        //only select as an end timestamp if it larger than start timestamp
-                        var startTime = new Date(selectedBuses[raw_data[idx][3]].substring(0, 19).replace(" ", "T") + "+0000");
-                        var ts = new Date(raw_data[idx][11].substring(0, 19).replace(" ", "T") + "+0000");
-                        if(+startTime.getUTCHours() > +ts.getUTCHours()) {
-                            continue;
-                        }
-                        else if (+startTime.getUTCHours() == +ts.getUTCHours()) {
-                            if (+startTime.getUTCMinutes() > +ts.getUTCMinutes()) {
-                                continue;
-                            }
-                        }
-                        if (!(raw_data[idx][3] in selectedBuses2)){
-                            selectedBuses2[raw_data[idx][3]] = [selectedBuses[raw_data[idx][3]], raw_data[idx][11]]; //put end timestamp along with start timestamp 
-                        }
-                    }
-                }
-            }
-                        //filter by start date and end date of the bus
-                        data2 = {}; 
-                        for (idx in raw_data) {
-                            if (min_latitude_bounding == null || min_latitude_bounding > raw_data[idx][9])
-                                min_latitude_bounding = raw_data[idx][9];
-                            if (max_latitude_bounding == null || max_latitude_bounding < raw_data[idx][9])
-                                max_latitude_bounding = raw_data[idx][9];
-                            if (min_longitude_bounding == null || min_longitude_bounding > raw_data[idx][10])
-                                min_longitude_bounding = raw_data[idx][10];
-                            if (max_longitude_bounding == null || max_longitude_bounding < raw_data[idx][10])
-                                max_longitude_bounding = raw_data[idx][10];
-                                
-                            if (!(raw_data[idx][3] in selectedBuses2)) {
-                                continue;
-                            }
-                            var startTime = new Date(selectedBuses2[raw_data[idx][3]][0].substring(0, 19).replace(" ", "T") + "+0000");
-                            var endTime = new Date(selectedBuses2[raw_data[idx][3]][1].substring(0, 19).replace(" ", "T") + "+0000");
-                            var ts = new Date(raw_data[idx][11].substring(0, 19).replace(" ", "T") + "+0000");
-                          
-                            if(+startTime.getUTCHours() > +ts.getUTCHours()) {
-                                continue;
-                            }
-                            else if (+startTime.getUTCHours() == +ts.getUTCHours()) {
-                                if (+startTime.getUTCMinutes() > +ts.getUTCMinutes()) {
-                                    continue;
-                                }
-                            }
-                            
-                            if(+endTime.getUTCHours() < +ts.getUTCHours()) {
-                                continue;
-                            }
-                            else if (+endTime.getUTCHours() == +ts.getUTCHours()) {
-                                if (+endTime.getUTCMinutes() < +ts.getUTCMinutes()) {
-                                    continue;
-                                }
-                            }
-                            if (!(raw_data[idx][3] in data2)) {
-                                data2[raw_data[idx][3]] = []
-                            }
-                            item = {TimeStamp: raw_data[idx][11],
-                                    TimeStampStart: selectedBuses2[raw_data[idx][3]][0],
-                                    TimeStampEnd: selectedBuses2[raw_data[idx][3]][1],
-                                    LatitudePonto: raw_data[idx][9],
-                                    LongitudePonto: raw_data[idx][10],
-                                    TripTime: raw_data[idx][13],
-                                    Direction: raw_data[idx][14],
-                                   }
-                            
-                            data2[raw_data[idx][3]].push(item);
-                        }
-                    }         
+                    for (idx in raw_data) {
+                        if (min_latitude_bounding == null || min_latitude_bounding > raw_data[idx][9])
+                            min_latitude_bounding = raw_data[idx][9];
+                        if (max_latitude_bounding == null || max_latitude_bounding < raw_data[idx][9])
+                            max_latitude_bounding = raw_data[idx][9];
+                        if (min_longitude_bounding == null || min_longitude_bounding > raw_data[idx][10])
+                            min_longitude_bounding = raw_data[idx][10];
+                        if (max_longitude_bounding == null || max_longitude_bounding < raw_data[idx][10])
+                            max_longitude_bounding = raw_data[idx][10];
+                    }                             
           
                     if (redrawPoints){
                         raw_data_load_callback();
@@ -785,6 +708,7 @@
             //group trips by bus and trip
             trips = [];
             bus_dir = {};
+            max_trip_time = 100000000;
             for (idx in raw_data) {
                 bus_id = raw_data[idx][3];
                 trip_time = raw_data[idx][13];
@@ -797,12 +721,12 @@
                     bus_dir[bus_id] = direction;
                 }
             }
+            
             for (i in outlierBuses2){
                 for (idx in trips) {
                     trip_bus_id = trips[idx][0];
-                    trip_time = trips[idx][1];
-                
-                    if(trip_bus_id == outlierBuses2[i]) {
+                    
+                    /*if(trip_bus_id == outlierBuses2[i]) {
                         chart.append('svg:circle')
                         .attr("class", "dot")
                         .attr("r", 4.5)
@@ -811,8 +735,10 @@
                         .on("mouseover", function(d, i) { d3.select(this).html("bla").style({"visibility": "visible"});})
                         .on("mouseout", function(d, i) { d3.select(this).html("bla").style({"visibility": "hidden"});})
                         .style("opacity", "1.0")
-                        .style("fill", "red"); 
-                    } else {
+                        .style("fill", "red"); */
+                    
+                    if(trip_bus_id == outlierBuses2[i] || outlierBuses2[i] == "All") {
+                        trip_time = trips[idx][1];
                         chart.append('svg:circle')
                         .attr("class", "dot")
                         .attr("r", 4.5)
@@ -820,7 +746,7 @@
                         .attr("cx", 100 + 80*i)
                         .style("opacity", "0.4")
                         .style("fill", "blue");
-                    } 
+                    }
                 }
                 
                 //Create X axis label   
