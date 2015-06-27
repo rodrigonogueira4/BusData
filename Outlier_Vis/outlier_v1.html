@@ -79,6 +79,7 @@
         var raw_data_layer;
         var raw_data_load_callback_count;
         var selectedLines = [];
+        var selectedTimes = {};
         var selectedBusId = ""; 
         var min_latitude_bounding = null;
         var max_latitude_bounding = null;
@@ -1054,12 +1055,10 @@
                     }    
                 }*/
                 
-                if (redrawPoints)
-                {
+                if (redrawPoints){
                     overlay_outliers.setMap(map);
                     loadPtsRaw(true, true);
                 }
-                
                 
             }
         }
@@ -1213,6 +1212,18 @@
             selectedLines = [d.key];
             selectedBusId = ""; 
             loadPtsOutliers(true);
+        }
+        
+        function selectTime(d, refobj){
+            if(d3.select(refobj).classed("selected")){
+                d3.select(refobj).classed("selected", false);
+                d3.select(refobj).style({fill: 'steelblue'});
+                delete selectedTimes[d.key];
+            }else{
+                d3.select(refobj).classed("selected", true);
+                d3.select(refobj).style({fill: 'red'});
+                selectedTimes[d.key] = 0;
+            }
         }
         
         function selectBus(d){
