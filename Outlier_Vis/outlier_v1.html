@@ -59,6 +59,7 @@
         var outliersperdaylinefile = "number_of_outliers_per_day_line.csv";
         var outliersperdayhourlinefile = "number_of_outliers_per_day_hour_line.csv";
         var dateFileArray = [];
+		var outliersDict = {};
         var startHour;
         var startMinute;
         var endHour;
@@ -187,7 +188,59 @@
         var mapType = new google.maps.StyledMapType(stylez, { name:"Grayscale" });    
         map.mapTypes.set('tehgrayz', mapType);
         map.setMapTypeId('tehgrayz');
-    
+
+		//paint calendar
+		calendarColorMap();
+		
+		var daysCount = Object.keys(outliersDict).length;
+		var min_outlier_value = -1;
+		var max_outlier_value = -1;
+		
+		function calendarColorMap()
+		{
+			var first = 59172;
+			var offset = 864;
+			var prefix = "dp138";
+			var suffix = "00000";
+			for (var i=0; i<31; i++)
+			{
+				outliersDict[(i+1) + "_12"] = [prefix + (first + i * offset) + suffix, 0];
+			}
+		
+			daysCount = Object.keys(outliersDict).length;
+			min_outlier_value = -1;
+			max_outlier_value = -1;
+
+			for (key in outliersDict)
+			{
+				loadDay(key);
+			}
+		}
+		function loadDay(key)
+		{
+			d3.csv("outliers/" + key + ".csv", function(data) {
+				outliersDict[key][1] = data.length;
+
+				if (min_outlier_value == -1 || outliersDict[key][1] < min_outlier_value)
+				{
+					min_outlier_value = outliersDict[key][1];
+				}
+				if (max_outlier_value == -1 || outliersDict[key][1] > max_outlier_value)
+				{
+					max_outlier_value = outliersDict[key][1];
+				}
+				
+				if (!--daysCount) loadedDict();
+			});
+		}
+		function loadedDict()
+		{
+			for (key in outliersDict)
+			{
+				$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + outliersDict[key][1] / max_outlier_value + ")"});
+			}
+		}
+		
         // Load the raw data. When the data comes back, create an overlay.        
         overlay_raw.onAdd = function() {
             raw_data_layer = d3.select(this.getPanes().overlayMouseTarget).append("div")
