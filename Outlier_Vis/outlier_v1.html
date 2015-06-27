@@ -704,7 +704,8 @@
         
         function loadTripTimes(outlierBuses) {
             chart = d3.select("#tripchart");
-            chart.selectAll(".dot").remove(); //remove all dots in the chart
+            chart.selectAll(".dotraw").remove(); //remove all dots in the chart
+            chart.selectAll(".dotoutlier").remove(); //remove all dots in the chart
             chart.selectAll(".xlabel").remove(); //remove X labels
             outlierBuses2 = ["All"].concat(outlierBuses);
                 
@@ -760,20 +761,15 @@
                     
                     if(trip_bus_id == outlierBuses2[i] || outlierBuses2[i] == "All") {
                         trip_time = trips[idx][1];
-                        color = "blue";
-                        opacity = 0.4;
+                        dotclass = "dotraw";
                         if (idx in outlier_trips){
-                            color = "red";
-                            opacity = 1.0;
+                            dotclass = "dotoutlier";
                         }
-                        
                         chart.append('svg:circle')
-                        .attr("class", "dot")
+                        .attr("class", dotclass)
                         .attr("r", 4.5)
                         .attr("cy", 275-(trip_time/4))
                         .attr("cx", 100 + 80*i)
-                        .style("opacity", opacity)
-                        .style("fill", color);
                     }
                 }
                 
@@ -804,14 +800,37 @@
             }
 
             var full_data = [];
-            var count = outliersfileArray.length;
-            
-            for (var i=0; i<outliersfileArray.length; i++){
-                d3.csv(outliersfileArray[i], function(temp_data) {
-                    full_data.push(temp_data);
-                    
-                    if (!--count) loadData();
+            //if no date was selected, subsample days
+            var dates = [];
+            if (outliersfileArray.length == 0){
+                datesdist = []
+                d3.csv(outliersperdayfile, function(data) {
+                     data.forEach(function(d) {
+                        for (i=0;i<d.NumberOfOutliers;i++){
+                            datesdist.push(d.Date);
+                        }
+                    });
+                    for (i = 0;i < 5; i++){//subsample 5 days
+                        idx = Math.floor((Math.random() * datesdist.length) + 1);
+                        monthday = datesdist[idx].split("/")
+                        dates.push("outliers/" + monthday[1] + "_" + monthday[0] + ".csv");
+                    }
+                    loaddays();
                 });
+                
+            }else{
+                dates = outliersfileArray;
+                loaddays();
+            }
+            
+            function loaddays(){
+                var count = dates.length;
+                for (var i=0; i<dates.length; i++){
+                    d3.csv(dates[i], function(temp_data) {
+                        full_data.push(temp_data);        
+                        if (!--count) loadData();
+                    });
+                }
             }
             function loadData() {
                 var data = [];
@@ -822,14 +841,15 @@
 
                 data = data.filter(function(row,index) {
                     var contains = false;
-                    if (selectedLines.length == 0)
+                    if (selectedLines.length == 0){ //if no lines were selected, select all
                         contains = true;
-                    for (i in selectedLines) {
-                        if (row['Linha'] == selectedLines[i]) {
-                            contains = true;
+                    }else{
+                        for (i in selectedLines) {
+                            if (row['Linha'] == selectedLines[i]) {
+                                contains = true;
+                            }
                         }
                     }
-                    
                     return contains;
                 });
                 outlier_data = []; 
