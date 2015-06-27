@@ -58,7 +58,7 @@
         var outliersfileArray = ["outliers/5_12.csv"];
         var outliersperdayfile = "number_of_outliers_per_day.csv";
         var outliersperdayhourlinefile = "number_of_outliers_per_day_hour_line.csv";
-        var dateFileArray = ["5-12-2013"];
+        var dateFileArray = [];
         var startHour;
         var startMinute;
         var endHour;
@@ -109,6 +109,7 @@
                 outliersfile = "outliers/" + day + "_" + month + ".csv";
                 outliersfileArray.push(outliersfile);   
             }
+            loadTimeBarChart();
             loadLstLines();
             loadPtsOutliers("", true);
         })
@@ -305,9 +306,7 @@
                             if (listOfOutlierBuses.indexOf(listOfBuses[i]) != -1)
                             {
                                 var div = document.createElement("div");
-
                                 div_list.appendChild(div);
-                                
                                 div.innerHTML = listOfBuses[i];
                                 div.style.color = "white";
                                 div.style.border = "0px solid white";
@@ -626,13 +625,16 @@
         var timeBars = [];
         function loadTimeBarChart() {
             var timebarchart_data_dic = {};
+            
             d3.csv(outliersperdayhourlinefile, function(data) {
                 data.forEach(function(d) {
-                    
                     if (!(d.Hour in timebarchart_data_dic)){
                         timebarchart_data_dic[d.Hour] = 0    
                     }
-                    timebarchart_data_dic[d.Hour] += +d.NumberOfOutliers
+                    datestr = (d.Day.toString()+ "-" + d.Month.toString() + "-" + d.Year.toString());
+                    if ( (dateFileArray.indexOf(datestr) != -1) || dateFileArray.length == 0){
+                         timebarchart_data_dic[d.Hour] += +d.NumberOfOutliers
+                    }
                 });
                 //convert to list
                 var timebarchart_data = [];
@@ -650,7 +652,8 @@
                 chart = d3.select("#timeBarchart")
                                 .attr("width", barWidth * timebarchart_data.length)
                                 .attr("height", height);
-
+                chart.selectAll("g").remove(); //remove all bars
+                
                 bar = chart.selectAll("g")
                                 .data(timebarchart_data)
                                 .enter().append("g")
@@ -708,9 +711,12 @@
             //group trips by bus and trip
             trips = [];
             bus_dir = {};
-            max_trip_time = 100000000;
+            max_trip_time = 0;
+            outlier_trips = {};
+            j = 0;
             for (idx in raw_data) {
                 bus_id = raw_data[idx][3];
+                timestamp = new Date(raw_data[idx][11].substring(0, 10) + "T" + raw_data[idx][11].substring(10, 18) + "+0000");
                 trip_time = raw_data[idx][13];
                 direction = raw_data[idx][14];
                 if (!(bus_id in bus_dir)){
@@ -719,6 +725,21 @@
                 if (direction != bus_dir[bus_id]){
                     trips.push([bus_id, trip_time, direction]);
                     bus_dir[bus_id] = direction;
+                    if (trip_time > max_trip_time){
+                        max_trip_time = trip_time;
+                    }    
+                    j += 1;
+                }
+                
+                //check if this is an outlier
+                for (idx2 in outlier_data){
+                    timeStampOut = new Date(outlier_data[idx2].TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
+                    busIdOut = outlier_data[idx2].BusId;
+                    if (busIdOut == bus_id){
+                        if (timeStampOut.getTime() == timestamp.getTime()){
+                            outlier_trips[j] = 0;    
+                        }
+                    }
                 }
             }
             
@@ -739,13 +760,20 @@
                     
                     if(trip_bus_id == outlierBuses2[i] || outlierBuses2[i] == "All") {
                         trip_time = trips[idx][1];
+                        color = "blue";
+                        opacity = 0.4;
+                        if (idx in outlier_trips){
+                            color = "red";
+                            opacity = 1.0;
+                        }
+                        
                         chart.append('svg:circle')
                         .attr("class", "dot")
                         .attr("r", 4.5)
                         .attr("cy", 275-(trip_time/4))
                         .attr("cx", 100 + 80*i)
-                        .style("opacity", "0.4")
-                        .style("fill", "blue");
+                        .style("opacity", opacity)
+                        .style("fill", color);
                     }
                 }
                 
@@ -1130,7 +1158,6 @@
             return n > 9 ? "" + n: "0" + n;
         }
         
-        //loadOutliersPerDay();
         loadTimeBarChart();
         loadLstLines();
        
