@@ -207,7 +207,27 @@
 			var offset = 864;
 			var prefix = "dp138";
 			var suffix = "00000";
+<<<<<<< HEAD
 
+=======
+			/*for (var i=0; i<31; i++)
+			{
+				//outliersDict[(i+1) + "_10"] = [prefix + (first + i * offset) + suffix, 0];
+				if ((first_october + i * offset) >= 10000)
+					outliersDict[(i+1) + "_10"] = [prefix + (first_october + i * offset) + suffix, 0];
+				else
+					outliersDict[(i+1) + "_10"] = [prefix + "0" + (first_october + i * offset) + suffix, 0];				
+				
+				if (i<30){
+					if (i<2)
+						outliersDict[(i+1) + "_11"] = [prefix + (first_november + i * offset) + suffix, 0];
+					else
+						outliersDict[(i+1) + "_11"] = [prefix + (third_november + (i-2) * offset) + suffix, 0];					
+				}
+				
+				outliersDict[(i+1) + "_12"] = [prefix + (first_december + i * offset) + suffix, 0];
+			}*/
+>>>>>>> 215ac4e58e109512a2d43183b62c51ec6b5e94cd
 			for (var i=0; i<31; i++)
 			{
 				//outliersDict[(i+1) + "_10"] = [prefix + (first + i * offset) + suffix, 0];
@@ -231,6 +251,13 @@
 			min_outlier_value = -1;
 			max_outlier_value = -1;
 
+<<<<<<< HEAD
+=======
+			/*for (key in outliersDict)
+			{
+				loadDay(key);
+			}*/
+>>>>>>> 215ac4e58e109512a2d43183b62c51ec6b5e94cd
 			loadDay();
 		}
 		//function loadDay(key)
@@ -258,6 +285,26 @@
 				}
 				loadedDict();
 			});
+<<<<<<< HEAD
+=======
+			/*d3.csv("outliers/" + key + ".csv", function(data) {
+				if (data != null)
+				{
+					outliersDict[key][1] = data.length;
+
+					if (min_outlier_value == -1 || outliersDict[key][1] < min_outlier_value){
+						min_outlier_value = outliersDict[key][1];
+					}
+					if (max_outlier_value == -1 || outliersDict[key][1] > max_outlier_value){
+						max_outlier_value = outliersDict[key][1];
+					}
+					
+				}
+				else
+					outliersDict[key][1] = 0;
+				if (!--daysCount) loadedDict();
+			});*/
+>>>>>>> 215ac4e58e109512a2d43183b62c51ec6b5e94cd
 		}
 		var hsv2rgb = function(h, s, v) {
 			// adapted from http://schinckel.net/2012/01/10/hsv-to-rgb-in-javascript/
@@ -492,7 +539,7 @@
                                 }
                             }
                             function transform2(d) {
-                                if (d.value['BusId'] == busid){
+                                if (d.value['BusId'] == busid && selectedBusId != d.value['BusId']){
                                     selectBus(d);  //CORRECT THIS, IT IS CALLING THE FUNCTION MULTIPLE TIMES
                                 }
                                 if (listOfSelectedBuses.indexOf(d.value["BusId"]) != -1){
@@ -550,9 +597,10 @@
         };
         
         var outlier_markers = [];
+		var projection;
 
         overlay_outliers.draw = function() {
-            var projection = this.getProjection(),
+            projection = this.getProjection(),
             padding = 10;
             
             var tooltip = d3.select("body")
@@ -597,77 +645,13 @@
                   .attr("cx", padding)
                   .attr("cy", padding);
             
-            console.log("final:"+selectedBusId);
+            //console.log("final:"+selectedBusId);
             $(".marker2").remove();
+			//console.log(selectedBusId);
+			//console.log(selectedBusId != "");
             if (selectedBusId != "") {
-                outlier_data_filtered = outlier_data.filter(function(row,index) {
-                    if (row['BusId'] == selectedBusId) {
-                        return true;
-                    }
-                    return false;
-                });
-                var marker = outlier_data_layer.selectAll("svg2")
-                                               .data(d3.entries(outlier_data_filtered))
-                                               .style("z-index", 1)
-                                               .each(
-                                                  function (d) {
-                                                    d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-                                                    d1 = projection.fromLatLngToDivPixel(d1);
-                                                     d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
-                                                     d2 = projection.fromLatLngToDivPixel(d2);
-                                                     var minx = Math.min(d1.x, d2.x);
-                                                     var miny = Math.min(d1.y, d2.y);
-                                                    return d3.select(this)
-                                                      .style("left", (minx) + "px")
-                                                      .style("top", (miny) + "px");
-                                                  }
-                                               )
-                                               .enter().append("svg:svg")
-                                               .each(
-                                                  function (d) {
-                                                    d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-                                                    d1 = projection.fromLatLngToDivPixel(d1);
-                                                     d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
-                                                     d2 = projection.fromLatLngToDivPixel(d2);
-                                                     var minx = Math.min(d1.x, d2.x);
-                                                     var miny = Math.min(d1.y, d2.y);
-                                                    return d3.select(this)
-                                                      .style("left", (minx) + "px")
-                                                      .style("top", (miny) + "px");
-                                                  }
-                                               )
-                                               .attr("class", "marker2");
-                marker.append("svg:line")
-                      .attr("class", "connectionline")
-                      .attr("x1", 0)
-                      .attr("y1", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-                                                     d1 = projection.fromLatLngToDivPixel(d1);
-                                                     d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
-                                                     d2 = projection.fromLatLngToDivPixel(d2);
-                                                     if (d1.x>d2.x){
-                                                         return d2.y - Math.min(d1.y,d2.y);
-                                                     }else{
-                                                         return d1.y - Math.min(d1.y,d2.y);
-                                                     }
-                                                  })
-                      .attr("x2", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-                                                     d1 = projection.fromLatLngToDivPixel(d1);
-                                                     d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
-                                                     d2 = projection.fromLatLngToDivPixel(d2);
-                                                     var minx = Math.min(d1.x, d2.x);
-                                                     var maxx = Math.max(d1.x, d2.x);
-                                                     return maxx-minx;
-                                                  })
-                      .attr("y2", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
-                                                     d1 = projection.fromLatLngToDivPixel(d1);
-                                                     d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
-                                                     d2 = projection.fromLatLngToDivPixel(d2);
-                                                     if (d1.x>d2.x){
-                                                         return d1.y - Math.min(d1.y,d2.y);
-                                                     }else{
-                                                         return d2.y - Math.min(d1.y,d2.y);
-                                                     }
-                                                  });
+				//console.log("aqui");
+				addOutlierPath();
             }
         };
     
@@ -675,6 +659,78 @@
             $(".outliers").remove();
             outlier_markers = [];
         };
+		
+		function addOutlierPath()
+		{
+			var outlier_data_filtered = outlier_data.filter(function(row,index) {
+				if (row['BusId'] == selectedBusId) {
+					return true;
+				}
+				return false;
+			});
+			var marker = outlier_data_layer.selectAll("svg2")
+								   .data(d3.entries(outlier_data_filtered))
+								   .style("z-index", 1)
+								   .each(
+									  function (d) {
+										d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
+										d1 = projection.fromLatLngToDivPixel(d1);
+										 d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
+										 d2 = projection.fromLatLngToDivPixel(d2);
+										 var minx = Math.min(d1.x, d2.x);
+										 var miny = Math.min(d1.y, d2.y);
+										return d3.select(this)
+										  .style("left", (minx) + "px")
+										  .style("top", (miny) + "px");
+									  }
+								   )
+								   .enter().append("svg:svg")
+								   .each(
+									  function (d) {
+										d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
+										d1 = projection.fromLatLngToDivPixel(d1);
+										 d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
+										 d2 = projection.fromLatLngToDivPixel(d2);
+										 var minx = Math.min(d1.x, d2.x);
+										 var miny = Math.min(d1.y, d2.y);
+										return d3.select(this)
+										  .style("left", (minx) + "px")
+										  .style("top", (miny) + "px");
+									  }
+								   )
+								   .attr("class", "marker2");
+			marker.append("svg:line")
+				  .attr("class", "connectionline")
+				  .attr("x1", 0)
+				  .attr("y1", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
+												 d1 = projection.fromLatLngToDivPixel(d1);
+												 d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
+												 d2 = projection.fromLatLngToDivPixel(d2);
+												 if (d1.x>d2.x){
+													 return d2.y - Math.min(d1.y,d2.y);
+												 }else{
+													 return d1.y - Math.min(d1.y,d2.y);
+												 }
+											  })
+				  .attr("x2", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
+												 d1 = projection.fromLatLngToDivPixel(d1);
+												 d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
+												 d2 = projection.fromLatLngToDivPixel(d2);
+												 var minx = Math.min(d1.x, d2.x);
+												 var maxx = Math.max(d1.x, d2.x);
+												 return maxx-minx;
+											  })
+				  .attr("y2", function (d) {     d1 = new google.maps.LatLng(+d.value['LatitudePonto'], +d.value['LongitudePonto']);
+												 d1 = projection.fromLatLngToDivPixel(d1);
+												 d2 = new google.maps.LatLng(+d.value['LatitudePontoPrevious'], +d.value['LongitudePontoPrevious']); 
+												 d2 = projection.fromLatLngToDivPixel(d2);
+												 if (d1.x>d2.x){
+													 return d1.y - Math.min(d1.y,d2.y);
+												 }else{
+													 return d2.y - Math.min(d1.y,d2.y);
+												 }
+											  });
+		}
 
         var daysBars = [];
         function loadOutliersPerDay() {
@@ -1354,6 +1410,8 @@
                 "<b>Line:</b> " + d.value['Line'] + "<br>"+
                 "<b>Bus Id:</b> " + d.value['BusId']);
             $("#outlierinfo").show();  
+			
+			addOutlierPath();
         }
         
         function format2digits(n){
