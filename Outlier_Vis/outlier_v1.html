@@ -12,39 +12,43 @@
         <link rel="stylesheet" type="text/css" href="outlier.css"> 
     </head>
     <body>
-        <div style="width: 1470px;height: 200px;">
-            <div style="width: 150px;height: 200px;float: left;">
-                <font size="5">RioBusData</font>
-                <br>
-                <font size="3">Visualization of Outlier Buses in the City Rio de Janeiro</font>
+        <div style="width: 1600px;">
+            <div style="width: 400px;height: 800px;float: left;">
+                <div style="width: 400px;height: 70px;float: left;">
+                    <font size="5">RioBusData</font>
+                    <br>
+                    <font size="3">Visualization of Outlier Buses in the City Rio de Janeiro</font>
+                </div>
+                <div id="sortLineBarChartDiv">
+                    <!--<button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort by number of outliers</button>-->
+                    <input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()" />
+                    <label for="sortLineBarChart">Sort by number of outliers</label>
+                </div>
+                <div class="barchartDiv">
+                    <svg class="barchart"></svg>
+                </div>
+                <div id="busesOfLine"></div>
+
             </div>
-            <div style="width: 670px;height: 200px;float: left;">
-                <div id="multiInlinePicker" ></div>
+            <!---<center>
+                <div id="dayChartDiv">
+                    <svg id="dayBarchart"></svg>
+                </div>
+            </center>-->
+            <div style="margin-left: 10px;width: 1150px;height: 800px;float: left;">
+                <div style="width: 100%; height: 800px; overflow: hidden;">
+
+                    <div style="width: 670px;height: 200px;float: left;">
+                        <div id="multiInlinePicker" ></div>
+                    </div>
+                    <div style="width: 450px;height: 200px;float: left;">
+                        <svg id="timeBarchart"></svg>
+                    </div>
+                    <div >
+                        <div id="map" style="height: 800px"></div>
+                    </div> 
+                </div>
             </div>
-            <div style="width: 600px;height: 200px;float: left;">
-                <svg id="timeBarchart"></svg>
-            </div>
-        </div>
-       
-        <!---<center>
-            <div id="dayChartDiv">
-                <svg id="dayBarchart"></svg>
-            </div>
-        </center>-->
-        <br> 
-        <div style="width: 100%; height: 600px; overflow: hidden;">
-            <!--<div id="sortLineBarChartDiv"><button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort by number of outliers</button></div>-->
-            <div id="sortLineBarChartDiv">
-                <input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()" />
-                <label for="sortLineBarChart">Sort by number of outliers</label>
-            </div>
-            <div class="barchartDiv">
-                <svg class="barchart"></svg>
-            </div>
-            <div id="busesOfLine"></div>
-            <div style="margin-left: 400px;">
-                <div id="map" style="height: 600px"></div>
-            </div> 
         </div>
         <div style="width: 100%; overflow: hidden;">
                 <svg id="tripchart" width="1000" height="350"></svg>
@@ -718,7 +722,7 @@
                 for (var hour in timebarchart_data_dic) {
                     timebarchart_data.push({key: hour, number_of_outliers: timebarchart_data_dic[hour]});
                 }
-                barWidth = 30;
+                barWidth = 20;
                 height = 192;
 
                 var y = d3.scale.linear()

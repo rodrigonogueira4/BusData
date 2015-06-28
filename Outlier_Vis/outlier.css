@@ -8,7 +8,7 @@
 
     #map {
       width: 100%;
-      height:700px;
+      height:670px;
       margin: 0;
       padding: 0;
     }
@@ -74,7 +74,7 @@
     .barchartDiv {
         float: left;
         overflow-y: scroll;
-        height: 580px;
+        height: 710px;
         width: 300px;
     }
 
@@ -137,7 +137,7 @@
         position: relative;
         overflow-y: scroll;
         width: 100px;
-        height: 580px;
+        height: 710px;
         cursor: default;
         margin: 0;
     }
