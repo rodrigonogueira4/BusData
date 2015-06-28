@@ -70,7 +70,6 @@
         var RIO_CENTER_LAT = -22.911773;
         var RIO_CENTER_LONG = -43.230199;
         var listOfOutlierBuses = [];
-        var listOfSelectedBuses = [];
         var overlay_outliers = new google.maps.OverlayView();
         var outlier_data;
         var outlier_data_layer;
@@ -79,7 +78,7 @@
         var raw_data_layer;
         var raw_data_load_callback_count;
         var selectedLines = [];
-        var selectedTimes = {};
+        var selectedHours = {0:0,1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,21:0,22:0,23:0}; //all hours selected
         var selectedBusId = ""; 
         var min_latitude_bounding = null;
         var max_latitude_bounding = null;
@@ -104,7 +103,7 @@
             outliersfileArray = [];
             dateFileArray = [];
             for (var i = 0; i < date.length; i++){
-                datei = date[i]; //get only the last selected day by now
+                datei = date[i];
                 day = datei.getDate();
                 month = datei.getMonth() + 1;
                 year = datei.getFullYear();
@@ -117,6 +116,7 @@
             loadTimeBarChart();
             loadLstLines();
             selectedBusId = "";
+            selectedLines = [];
             loadPtsOutliers(true);
         })
     </script>   
@@ -392,27 +392,9 @@
                     
                     //filter by start date and end date
                     raw_data = raw_data.filter(function(row,index) {
-                        var ts = new Date(row[11].substring(0, 19).replace(" ", "T")+ "+0000");
-                        
-                        if (startHour > +ts.getUTCHours()) {
-                            return false;
-                        }
-                        else if (startHour == +ts.getUTCHours()) {
-                           if (startMinute > +ts.getUTCMinutes()) {
-                               return false;
-                           }
-                        }
-                        
-                        if (endHour < +ts.getUTCHours()) {
-                            return false;
-                        }
-                        else if (endHour == +ts.getUTCHours()) {
-                           if (endMinute < +ts.getUTCMinutes()) {
-                               return false;
-                           }
-                        }
-                        
-                        return true;
+                        //convert to standard format
+                        timestamp = row[11].substring(0, 10) + "T" + row[11].substring(10, 18) + "+0000"
+                        return containsHour(timestamp);
                     });   
                     var listOfBuses = []
                     
@@ -425,14 +407,13 @@
                         var div_list = document.getElementById("busesOfLine");
                         div_list.innerHTML = "";
                         
-                        listOfSelectedBuses = [];
-                        
                         for (var i=0; i<listOfBuses.length; i++)
                         {
                             if (listOfOutlierBuses.indexOf(listOfBuses[i]) != -1)
                             {
                                 var div = document.createElement("div");
                                 div_list.appendChild(div);
+                                div.id = "divBus" + listOfBuses[i];
                                 div.innerHTML = listOfBuses[i];
                                 div.style.color = "white";
                                 div.style.border = "0px solid white";
@@ -469,37 +450,9 @@
                         });
                         
                         $(".busOutlierDiv").click(function() {
-                            listOfSelectedBuses = [$(this).html()];
-                            $(".marker2").remove(); //remove paths between outliers
-
-                            d3.select(".busselected").style({opacity: 0.4});
-                            d3.select(".busselected").classed("busselected", false);
-                            d3.select(this).classed("busselected", true);
-                            d3.select(this).style({opacity: 1.0});
-                            
                             var busid = $(this).html();
-
-                            for (var j=0; j<raw_markers.length; j++)
-                                raw_markers[j].each(transform);
-                            for (var i=0; i<outlier_markers.length; i++)
-                                outlier_markers[i].each(transform2);
-                            function transform(d) {
-                                if (listOfSelectedBuses.indexOf(d.value[3]) != -1){
-                                    return d3.select(this).style("opacity", 1.0);
-                                }else{
-                                    return d3.select(this).style("opacity", 0.0);
-                                }
-                            }
-                            function transform2(d) {
-                                if (d.value['BusId'] == busid && selectedBusId != d.value['BusId']){
-                                    selectBus(d);  //CORRECT THIS, IT IS CALLING THE FUNCTION MULTIPLE TIMES
-                                }
-                                if (listOfSelectedBuses.indexOf(d.value["BusId"]) != -1){
-                                    return d3.select(this).style("visibility", "visible");
-                                }else{
-                                    return d3.select(this).style("visibility", "hidden");
-                                }
-                            }
+                            selectBus(busid);
+                          
                         });
                         
                         //load trip-time chart. It must be inside the loadptsraw because the raw points are only loaded in the end of the function.
@@ -589,7 +542,7 @@
                                            .style("height", "14px")
                                            .style("z-index", 20)
                                            .attr("class", "marker")
-                                           .on("click", function(d, i) {selectBus(d);});
+                                           .on("click", function(d, i) {selectBus(d.value["BusId"]);});
             // Add a circle.
             outlier_markers.push(marker.append("svg:circle"));
             outlier_markers[outlier_markers.length - 1]
@@ -597,12 +550,8 @@
                   .attr("cx", padding)
                   .attr("cy", padding);
             
-            //console.log("final:"+selectedBusId);
             $(".marker2").remove();
-			//console.log(selectedBusId);
-			//console.log(selectedBusId != "");
-            if (selectedBusId != "") {
-				//console.log("aqui");
+			if (selectedBusId != "") {
 				addOutlierPath();
             }
         };
@@ -684,7 +633,6 @@
 											  });
 		}
 
-        var daysBars = [];
         function loadOutliersPerDay() {
             var barchart_data = [];
             d3.csv(outliersperdayfile, function(data) {
@@ -708,7 +656,7 @@
                                 .enter().append("g")
                                 .attr("transform", function(d, i) { return "translate(" + i * barWidth + "," + (height - y(Math.log(d.number_of_outliers))) + ")"; });
                                
-                daysBars.push(bar.append("rect")
+                bar.append("rect")
                     .attr("height",  function(d) { return y(d.number_of_outliers); })
                     .attr("width", barWidth - 1)
                     .on("click", function(d, i) {selectDay(d, this);})
@@ -717,7 +665,7 @@
                                         })
                     .on("mouseout", function(d, i) {
                                         d3.select(this).style({opacity: '1.0'});
-                                     }));
+                                     });
 
                 bar.append("text")
                     .attr("x", barWidth / 2)
@@ -745,41 +693,30 @@
                     .on("mouseout", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                      });
-                colorDefaultDay();
             });
         }
         
-        function colorDefaultDay(){
-            for (var i=0; i<daysBars.length; i++)
-                daysBars[i].each(transform);
-
-            function transform(d){
-                if (d.key == "12/5"){
-                    d3.select(this).classed("vselected", true);
-                    d3.select(this).style({fill: 'red'});
-                }
-            }
-        }
         
-        var timeBars = [];
         function loadTimeBarChart() {
-            var timebarchart_data_dic = {};
+            
             
             d3.csv(outliersperdayhourlinefile, function(data) {
+                var timebarchart_data_dic = {};
                 data.forEach(function(d) {
                     if (!(d.Hour in timebarchart_data_dic)){
                         timebarchart_data_dic[d.Hour] = 0    
                     }
                     datestr = (d.Day.toString()+ "-" + d.Month.toString() + "-" + d.Year.toString());
-                    if ( (dateFileArray.indexOf(datestr) != -1) || dateFileArray.length == 0){
-                         timebarchart_data_dic[d.Hour] += +d.NumberOfOutliers
+                    if ( (dateFileArray.indexOf(datestr) != -1) || dateFileArray.length == 0){ //check date 
+                        if ( (selectedLines.indexOf(d.Line) != -1) || selectedLines.length == 0){ //check line
+                            timebarchart_data_dic[d.Hour] += +d.NumberOfOutliers;
+                        }
                     }
                 });
                 //convert to list
                 var timebarchart_data = [];
                 for (var hour in timebarchart_data_dic) {
                     timebarchart_data.push({key: hour, number_of_outliers: timebarchart_data_dic[hour]});
-                    
                 }
                 barWidth = 30;
                 height = 192;
@@ -788,34 +725,34 @@
                     .domain([0, d3.max(timebarchart_data, function(d) { return d.number_of_outliers*1.05; })])
                     .range([0, height]);
 
-                chart = d3.select("#timeBarchart")
+                var timechart = d3.select("#timeBarchart")
                                 .attr("width", barWidth * timebarchart_data.length)
                                 .attr("height", height);
-                chart.selectAll("g").remove(); //remove all bars
+                timechart.selectAll("g").remove(); //remove all bars
                 
-                bar = chart.selectAll("g")
+                var timebar = timechart.selectAll("g")
                                 .data(timebarchart_data)
                                 .enter().append("g")
                                 .attr("transform", function(d, i) { return "translate(" + i * barWidth + "," + (height - y(d.number_of_outliers)) + ")"; });
-                               
-                timeBars.push(bar.append("rect")
+                
+                timebar.append("rect")
                     .attr("height",  function(d) { return y(d.number_of_outliers); })
                     .attr("width", barWidth - 1)
-                    .on("click", function(d, i) {selectTime(d, this);})
+                    .on("click", function(d, i) {selectTime(d.key);})
                     .on("mouseover", function(d, i) {
-                                        d3.select(this).style({opacity: '0.6'});
+                                        d3.select(this).style({opacity: '0.8'});
                                         })
                     .on("mouseout", function(d, i) {
                                         d3.select(this).style({opacity: '1.0'});
-                                     }));
-
-                bar.append("text")
+                                     });
+                
+                timebar.append("text")
                     .attr("x", barWidth / 2)
                     .attr("y", function (d) { y(d.number_of_outliers); })
                     .attr("dx", "0.5em")
                     .attr("transform", function(d) { return "translate(0, " + (y(d.number_of_outliers) - 3) + ")"; })
                     .text(function(d) { return d.key; })
-                    .on("click", function(d, i) {selectTime(d, this);})
+                    .on("click", function(d, i) {selectTime(d.key);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
                                         })
@@ -823,21 +760,22 @@
                                         d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                      });
                 
-                bar.append("text")
+                timebar.append("text")
                     .attr("x", barWidth / 2)
                     .attr("y", function (d) { y(d.number_of_outliers); })
                     .attr("dx", ".8em")
                     .text(function(d) { return d.number_of_outliers; })
-                    .on("click", function(d, i) {selectTime(d, this);})
+                    .on("click", function(d, i) {selectTime(d.key);})
                     .on("mouseover", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '0.6'});
                                         })
                     .on("mouseout", function(d, i) {
-                                        d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
+                                       d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                    });
-                //uncoment this
-                //colorDefaultDay();
+               colorTimeBars();
             });
+            
+            
         }
         
         
@@ -885,34 +823,8 @@
                     }
                 }
             }
-
-			//var min_trip_time = -1;
-			//var max_trip_time = -1;
-			
-            /*for (i in outlierBuses2){
-                for (idx in trips) {
-                    trip_bus_id = trips[idx][0];
-                                        
-                    if (trip_bus_id == outlierBuses2[i] || outlierBuses2[i] == "All") {
-                        trip_time = trips[idx][1];
-						
-						if (min_trip_time == -1 || min_trip_time > trip_time)
-						{
-							min_trip_time = trip_time;
-						}
-						if (max_trip_time == -1 || max_trip_time < trip_time)
-						{
-							max_trip_time = trip_time;
-						}
-						console.log(trip_time + " " + max_trip_time);
-					}
-				}
-			}*/
-			
+	
 			yScale.domain([Math.floor(min_trip_time), Math.ceil(max_trip_time)]);
-			/*yAxis = d3.svg.axis()
-                      .scale(yScale)
-                      .orient("left");*/
 			
 			chart.select(".axis")
 				 .transition().duration(1500)
@@ -939,8 +851,6 @@
                         if (idx in outlier_trips){
                             dotclass = "dotoutlier";
                         }
-						
-						//console.log(trip_time);
 						
                         chart.append('svg:circle')
 							.attr("class", dotclass)
@@ -1099,25 +1009,7 @@
             
                 //filter by start date
                 outlier_data = outlier_data.filter(function(row,index) {
-                    var ts = new Date(row["TimeStamp"].substring(0, 19).replace(" ", "T")+ "+0000");
-                    if (startHour > +ts.getUTCHours()) {
-                        return false;
-                    }
-                    else if (startHour == +ts.getUTCHours()) {
-                        if (startMinute > +ts.getUTCMinutes()) {
-                            return false;
-                        }
-                    }
-                    
-                    if(endHour < +ts.getUTCHours()) {
-                        return false;
-                    }
-                    else if (endHour == +ts.getUTCHours()) {
-                       if (endMinute< +ts.getUTCMinutes()) {
-                           return false;
-                       }
-                    }
-                    return true;
+                    return containsHour(row["TimeStamp"]);
                 });
                 
                 listOfOutlierBuses = []
@@ -1265,16 +1157,16 @@
                     .domain([0, d3.max(barchart_data, function(d) { return d.number_of_outliers; })])
                     .range([0, width]);
            
-                var chart = d3.select(".barchart")
+                var linechart = d3.select(".barchart")
                     .attr("width", width)
                     .attr("height", barHeight * barchart_data.length);
                 
-                var bar = chart.selectAll("g")
+                var linebars = linechart.selectAll("g")
                     .data(barchart_data)
                     .enter().append("g")
                     .attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
 
-                bar.append("rect")
+                linebars.append("rect")
                     .attr("width",  function(d) { return Math.max(70, x(d.number_of_outliers)); })
                     .attr("height", barHeight - 1)
                     .on("click", function(d, i) {selectLine(d, this);})
@@ -1285,7 +1177,7 @@
                                         d3.select(this).style({opacity: '1.0'});
                                      });
 
-                bar.append("text")
+                linebars.append("text")
                     .attr("x", function(d) { return (d.key).length * 5.5 + 2; })
                     .attr("y", barHeight / 2)
                     .attr("dy", ".35em")
@@ -1298,7 +1190,7 @@
                                         d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                      });
 
-                bar.append("text")
+                linebars.append("text")
                     .attr("x", function(d) { return Math.max(68, x(d.number_of_outliers) - 3); })
                     .attr("y", barHeight / 2)
                     .attr("dy", ".35em")
@@ -1310,8 +1202,15 @@
                     .on("mouseout", function(d, i) {
                                         d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                      });
-                
             });
+        }
+        
+        function containsHour(timestampstr){
+            var ts = new Date(timestampstr.substring(0, 19).replace(" ", "T")+ "+0000");
+            if ( (+ts.getUTCHours() in selectedHours)) { 
+                return true;
+            }
+            return false;
         }
         
         function selectDay(d, refobj){
@@ -1323,55 +1222,83 @@
             dateFileArray = [fields[1] + "-" + fields[0] + "-2013"];
             outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
             outliersfileArray = [outliersfile];
+            selectedLines = [];
             selectedBusId = "";
             loadLstLines();
         }
         
         function selectLine(d, refobj){
-            d3.select(".selected").style({fill: "steelblue"});
-            d3.select(".selected").classed("selected", false);
-            d3.select(refobj).classed("selected", true);
+            d3.select(".selectedLine").style({fill: "steelblue"});
+            d3.select(".selectedLine").classed("selectedLine", false);
+            d3.select(refobj).classed("selectedLine", true);
             d3.select(refobj).style({fill: 'red'});
             selectedLines = [d.key];
-            selectedBusId = ""; 
+            selectedBusId = "";
+            loadTimeBarChart();
+            loadPtsOutliers(true);
+            
+        }
+        
+        function selectTime(hour){
+            if(hour in selectedHours){
+                delete selectedHours[hour];
+            }else{
+                selectedHours[hour] = 0;
+            }
+            colorTimeBars();
             loadPtsOutliers(true);
         }
         
-        function selectTime(d, refobj){
-            if(d3.select(refobj).classed("selected")){
-                d3.select(refobj).classed("selected", false);
-                d3.select(refobj).style({fill: 'steelblue'});
-                delete selectedTimes[d.key];
-            }else{
-                d3.select(refobj).classed("selected", true);
-                d3.select(refobj).style({fill: 'red'});
-                selectedTimes[d.key] = 0;
+        function selectBus(busid){
+            $(".marker2").remove(); //remove paths between outliers
+          
+            for (var i=0; i<outlier_markers.length; i++){
+                outlier_markers[i].each(transform2);
             }
-        }
-        
-        function selectBus(d){
-            vis.selectAll("path.line").remove();
-            selectedBusId = d.value['BusId']; 
-            console.log("selectedBusId"+selectedBusId);
+            function transform2(d) {
+                if (d.value['BusId'] == busid){
+                    $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
+                            "<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
+                            "<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
+                            "<b>Line:</b> " + d.value['Line'] + "<br>"+
+                            "<b>Bus Id:</b> " + d.value['BusId']);
+                    $("#outlierinfo").show();
+                    
+                    return d3.select(this).style("opacity", 1.0);
+                }else{
+                    return d3.select(this).style("opacity", "0.5");
+                }
+            }
+            
+            selectedBusId = busid; 
             loadPtsOutliers(false);
             loadPtsRaw(false, false);
-                                   
-            $("#outlierinfo").html("<b>Selected outlier:</b><br>"+
-                "<b>Start:</b> " + d.value['TimeStampStart'] + "<br>"+
-                "<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
-                "<b>Line:</b> " + d.value['Line'] + "<br>"+
-                "<b>Bus Id:</b> " + d.value['BusId']);
-            $("#outlierinfo").show();  
-			
+            d3.select(".busselected").style({opacity: 0.4});
+            d3.select(".busselected").classed("busselected", false);
+            d3.select("#divBus"+busid).classed("busselected", true);
+            d3.select("#divBus"+busid).style({opacity: 1.0});
+            
 			addOutlierPath();
         }
         
+        function colorTimeBars(){
+            for (i in d3.select("#timeBarchart").selectAll("rect")[0]){
+                refobj = d3.select("#timeBarchart").selectAll("rect")[0][i];
+                if (i in selectedHours){
+                    d3.select(refobj).style({fill: "steelblue"});
+                }else{
+                    d3.select(refobj).style({fill: "lightgray"});
+                }
+            }
+
+        }
+            
         function format2digits(n){
             return n > 9 ? "" + n: "0" + n;
         }
         
         loadTimeBarChart();
         loadLstLines();
-       
+        
     </script>
 </html>

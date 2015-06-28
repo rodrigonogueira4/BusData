@@ -96,6 +96,7 @@
 
     #timeBarchart rect {
         fill: steelblue;
+        opacity: 1.0;
     }
 
     #timeBarchart text {
