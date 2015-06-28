@@ -207,9 +207,6 @@
 			var offset = 864;
 			var prefix = "dp138";
 			var suffix = "00000";
-<<<<<<< HEAD
-			for (var i=0; i<31; i++){
-=======
 			/*for (var i=0; i<31; i++)
 			{
 >>>>>>> 5d8272344cd38ab90776b0f4170cc50766249245
@@ -251,9 +248,6 @@
 			min_outlier_value = -1;
 			max_outlier_value = -1;
 
-<<<<<<< HEAD
-			for (key in outliersDict){
-=======
 			/*for (key in outliersDict)
 			{
 >>>>>>> 5d8272344cd38ab90776b0f4170cc50766249245
@@ -261,11 +255,6 @@
 			}*/
 			loadDay();
 		}
-<<<<<<< HEAD
-		function loadDay(key){
-			d3.csv("outliers/" + key + ".csv", function(data) {
-				if (data != null){
-=======
 		//function loadDay(key)
 		function loadDay()
 		{
@@ -310,12 +299,6 @@
 				if (!--daysCount) loadedDict();
 			});*/
 		}
-<<<<<<< HEAD
-        
-		function loadedDict(){
-			for (key in outliersDict){
-				$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + outliersDict[key][1] / max_outlier_value + ")"});
-=======
 		var hsv2rgb = function(h, s, v) {
 			// adapted from http://schinckel.net/2012/01/10/hsv-to-rgb-in-javascript/
 			var rgb, i, data = [];
@@ -364,7 +347,6 @@
 					color = hsv2rgb(Math.floor((100 - ((outliersDict[key][1] / max_outlier_value) * 100)) * 120 / 100), Math.abs((((outliersDict[key][1] / max_outlier_value) * 100) - 50) / 50), 1);
 					$("." + outliersDict[key][0]).css({"background-color" : color});
 				}
->>>>>>> 5d8272344cd38ab90776b0f4170cc50766249245
 			}
 		}
 		
