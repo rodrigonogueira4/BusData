@@ -150,7 +150,7 @@
         height: 100px;
         position: absolute; /*newly added*/
         right: 20px; /*newly added*/
-        bottom: 140px;/*newly added*/
+        bottom: 180px;/*newly added*/
         z-index: 100;
     }		
 
