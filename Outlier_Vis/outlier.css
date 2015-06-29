@@ -9,6 +9,7 @@
         stroke: lightgrey;
         stroke-opacity: 0.7;
         shape-rendering: crispEdges;
+        z-index: 1;
     }
 
     #map {

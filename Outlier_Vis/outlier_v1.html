@@ -801,7 +801,7 @@
             chart.selectAll(".dotoutlier").remove(); //remove all dots in the chart
             chart.selectAll(".xlabel").remove(); //remove X labels
             outlierBuses2 = ["All"].concat(outlierBuses);
-                
+            
             //group trips by bus and trip
             trips = [];
             bus_dir = {};
@@ -812,8 +812,8 @@
             for (idx in raw_data) {
                 bus_id = raw_data[idx][3];
                 timestamp = new Date(raw_data[idx][11].substring(0, 10) + "T" + raw_data[idx][11].substring(10, 18) + "+0000");
-                trip_time = +raw_data[idx][13];
-                direction = raw_data[idx][14];
+                trip_time = +raw_data[idx][15];
+                direction = raw_data[idx][16];
                 if (!(bus_id in bus_dir)){
                     bus_dir[bus_id] = "";
                 }
@@ -833,19 +833,19 @@
                     timeStampOut = new Date(outlier_data[idx2].TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
                     busIdOut = outlier_data[idx2].BusId;
                     if (busIdOut == bus_id){
-                        if (timeStampOut.getTime() == timestamp.getTime()){
+                        if (timeStampOut.getUTCHours() == timestamp.getUTCHours() && timeStampOut.getUTCMinutes() == timestamp.getUTCMinutes() && timeStampOut.getDate() == timestamp.getDate() && timeStampOut.getMonth() == timestamp.getMonth() && timeStampOut.getYear() == timestamp.getYear()){
                             outlier_trips[j] = 0;    
                         }
                     }
                 }
             }
 	
-			yScale.domain([Math.floor(min_trip_time), Math.ceil(max_trip_time)]);
+			yScale.domain([Math.floor(min_trip_time), Math.ceil(max_trip_time+20)]);
 	
 			chart.select(".axis")
 				 .transition().duration(1500)
 				 .call(yAxis);
-			
+          
             for (i in outlierBuses2){
                 for (idx in trips) {
                     trip_bus_id = trips[idx][0];
@@ -861,7 +861,7 @@
                         .style("opacity", "1.0")
                         .style("fill", "red"); */
                     
-                    if(trip_bus_id == outlierBuses2[i] || outlierBuses2[i] == "All") {
+                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All" && outlierBuses2.indexOf(trip_bus_id) != -1)) {
                         trip_time = trips[idx][1];
                         dotclass = "dotraw";
                         if (idx in outlier_trips){
@@ -872,7 +872,6 @@
 							.attr("class", dotclass)
 							.attr("r", 4.5)
 							.attr("cy", yScale(trip_time))
-							//.attr("cy", 275-(trip_time/4))
 							.attr("cx", 100 + 80*i);
                     }
                 }
@@ -886,8 +885,6 @@
                     .attr("font-size", "12px")
                     .text(outlierBuses2[i]);
                 
-                
-				
             }
             
             // function for the y grid lines
@@ -910,6 +907,7 @@
                 )
             
         }
+        
         function loadPtsOutliers(redrawPoints) {
             
             $("#outlierinfo").hide(); //hide selected oulier div
