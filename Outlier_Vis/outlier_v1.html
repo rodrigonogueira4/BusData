@@ -12,7 +12,7 @@
         <link rel="stylesheet" type="text/css" href="outlier.css"> 
     </head>
     <body>
-        <div style="width: 1600px;">
+        <div style="width: 1700px;">
             <div style="width: 400px;height: 800px;float: left;">
                 <div style="width: 400px;height: 70px;float: left;">
                     <font size="5">RioBusData</font>
@@ -35,13 +35,13 @@
                     <svg id="dayBarchart"></svg>
                 </div>
             </center>-->
-            <div style="margin-left: 10px;width: 1150px;height: 800px;float: left;">
+            <div style="margin-left: 10px;width: 1200px;height: 800px;float: left;">
                 <div style="width: 100%; height: 800px; overflow: hidden;">
 
                     <div style="width: 670px;height: 200px;float: left;">
                         <div id="multiInlinePicker" ></div>
                     </div>
-                    <div style="width: 450px;height: 200px;float: left;">
+                    <div style="width: 500px;height: 200px;float: left;">
                         <svg id="timeBarchart"></svg>
                     </div>
                     <div >
@@ -726,29 +726,19 @@
 
                 var yScale = d3.scale.linear()
                     .domain([0, d3.max(timebarchart_data, function(d) { return d.number_of_outliers*1.05; })])
-                    .range([10, height-10]);
+                    .range([5, height-5]);
 
                 var timechart = d3.select("#timeBarchart")
-                                .attr("width",300+ barWidth * timebarchart_data.length)
+                                .attr("width",100+ barWidth * timebarchart_data.length)
                                 .attr("height", height);
                 timechart.selectAll("g").remove(); //remove all bars
               
-                /*var yAxis = d3.svg.axis()
-                      .scale(yScale)
-                      .orient("left");
-                timechart.append("svg:g")
-                   .attr("class","axis")
-                   .attr("transform", "translate(" + (MARGINS.left) + ", " + (0) + ")")
-                   .call(yAxis);
+               
                 
-                timechart.select(".axis")
-                    .transition().duration(1500)
-                    .call(yAxis);
-                */
                 var timebar = timechart.selectAll("g")
                                 .data(timebarchart_data)
                                 .enter().append("g")
-                                .attr("transform", function(d, i) { return "translate(" + i * barWidth + "," + (height - yScale(d.number_of_outliers)) + ")"; });
+                                .attr("transform", function(d, i) { return "translate(" + (50 + i * barWidth) + "," + (-10+height - yScale(d.number_of_outliers)) + ")"; });
                 
                 timebar.append("rect")
                     .attr("height",  function(d) { return yScale(d.number_of_outliers); })
@@ -765,7 +755,7 @@
                     .attr("x", barWidth / 2)
                     .attr("y", function (d) { yScale(d.number_of_outliers); })
                     .attr("dx", "0.5em")
-                    .attr("transform", function(d) { return "translate(0, " + (yScale(d.number_of_outliers) - 3) + ")"; })
+                    .attr("transform", function(d) { return "translate(0, " + (yScale(d.number_of_outliers) + 10) + ")"; })
                     .text(function(d) { return d.key; })
                     .on("click", function(d, i) {selectTime(d.key);})
                     .on("mouseover", function(d, i) {
@@ -775,7 +765,7 @@
                                         d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                      });
                 
-                timebar.append("text")
+                /*timebar.append("text")
                     .attr("x", barWidth / 2)
                     .attr("y", function (d) { yScale(d.number_of_outliers); })
                     .attr("dx", ".8em")
@@ -787,6 +777,19 @@
                     .on("mouseout", function(d, i) {
                                        d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                    });
+                */
+                
+                 var yAxis = d3.svg.axis()
+                      .scale(yScale)
+                      .orient("left");
+                timechart.append("svg:g")
+                   .attr("class","axis")
+                   .attr("transform", "translate(" + (40) + ", " + (-5) + ")")
+                   .call(yAxis);
+                timechart.select(".axis")
+                    .transition().duration(1500)
+                    .call(yAxis);
+                
                colorTimeBars();
             });
             
