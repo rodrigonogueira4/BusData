@@ -143,11 +143,9 @@
             yAxis = d3.svg.axis()
                       .scale(yScale)
                       .orient("left");
-    
-        //vis.append("svg:g")
-        //  .attr("class","axis")
-        //   .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
-        //   .call(xAxis);
+        
+        
+       
         vis.append("svg:g")
            .attr("class","axis")
            .attr("transform", "translate(" + (MARGINS.left) + ", " + (0) + ")")
@@ -843,7 +841,7 @@
             }
 	
 			yScale.domain([Math.floor(min_trip_time), Math.ceil(max_trip_time)]);
-			
+	
 			chart.select(".axis")
 				 .transition().duration(1500)
 				 .call(yAxis);
@@ -887,8 +885,29 @@
                     .style("text-anchor", "middle")
                     .attr("font-size", "12px")
                     .text(outlierBuses2[i]);
+                
+                
 				
             }
+            
+            // function for the y grid lines
+            function make_y_axis() {
+              return d3.svg.axis()
+                  .scale(yScale)
+                  .orient("left")
+                  .ticks(5)
+            }
+            //remove existing grid lines
+            // Draw the y Grid lines
+            chart.selectAll("line.tick").remove();
+            chart.append("g")            
+                .attr("class", "grid")
+                .attr("transform", "translate(81,0)")
+                .call(make_y_axis()
+                       .tickSize(-(outlierBuses2.length-1)*80-40, 0, 0)
+                       .tickPadding(10)
+                       .tickFormat("")
+                )
             
         }
         function loadPtsOutliers(redrawPoints) {
