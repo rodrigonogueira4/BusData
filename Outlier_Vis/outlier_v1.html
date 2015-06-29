@@ -305,10 +305,10 @@
 			{
 				if (outliersDict[key][1] > 0)
 				{
-				//$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + outliersDict[key][1] / max_outlier_value + ")"});
-				//$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + ((outliersDict[key][1] / max_outlier_value) * 0.7) + ")"});
-					color = hsv2rgb(Math.floor((100 - ((outliersDict[key][1] / max_outlier_value) * 100)) * 120 / 100), Math.abs((((outliersDict[key][1] / max_outlier_value) * 100) - 50) / 50), 1);
-					$("." + outliersDict[key][0]).css({"background-color" : color});
+				    $("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + outliersDict[key][1] / max_outlier_value + ")"});
+				    //$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + ((outliersDict[key][1] / max_outlier_value) * 0.7) + ")"});
+				    //color = hsv2rgb(Math.floor((100 - ((outliersDict[key][1] / max_outlier_value) * 100)) * 120 / 100), Math.abs((((outliersDict[key][1] / max_outlier_value) * 100) - 50) / 50), 1);
+					//$("." + outliersDict[key][0]).css({"background-color" : color});
 				}
 			}
 		}
