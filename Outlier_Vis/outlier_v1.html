@@ -724,14 +724,13 @@
 
                 var yScale = d3.scale.linear()
                     .domain([0, d3.max(timebarchart_data, function(d) { return d.number_of_outliers*1.05; })])
-                    .range([5, height-5]);
+                    .range([height-5, 5]);
+                    //.range([5, height-5]);
 
                 var timechart = d3.select("#timeBarchart")
                                 .attr("width",100+ barWidth * timebarchart_data.length)
                                 .attr("height", height);
                 timechart.selectAll("g").remove(); //remove all bars
-              
-               
                 
                 var timebar = timechart.selectAll("g")
                                 .data(timebarchart_data)
