@@ -845,47 +845,6 @@
 				 .transition().duration(1500)
 				 .call(yAxis);
           
-            for (i in outlierBuses2){
-                for (idx in trips) {
-                    trip_bus_id = trips[idx][0];
-                    
-                    /*if(trip_bus_id == outlierBuses2[i]) {
-                        chart.append('svg:circle')
-                        .attr("class", "dot")
-                        .attr("r", 4.5)
-                        .attr("cy", 275-(trip_time/4))
-                        .attr("cx", 100 + 80*i)
-                        .on("mouseover", function(d, i) { d3.select(this).html("bla").style({"visibility": "visible"});})
-                        .on("mouseout", function(d, i) { d3.select(this).html("bla").style({"visibility": "hidden"});})
-                        .style("opacity", "1.0")
-                        .style("fill", "red"); */
-                    
-                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All" && outlierBuses2.indexOf(trip_bus_id) != -1)) {
-                        trip_time = trips[idx][1];
-                        dotclass = "dotraw";
-                        if (idx in outlier_trips){
-                            dotclass = "dotoutlier";
-                        }
-						
-                        chart.append('svg:circle')
-							.attr("class", dotclass)
-							.attr("r", 4.5)
-							.attr("cy", yScale(trip_time))
-							.attr("cx", 100 + 80*i);
-                    }
-                }
-                
-                //Create X axis label   
-                chart.append("svg:text")
-                    .attr("x", 100 + 80*i )
-                    .attr("y",  320 )
-                    .attr("class", "xlabel")
-                    .style("text-anchor", "middle")
-                    .attr("font-size", "12px")
-                    .text(outlierBuses2[i]);
-                
-            }
-            
             // function for the y grid lines
             function make_y_axis() {
               return d3.svg.axis()
@@ -904,6 +863,63 @@
                        .tickPadding(10)
                        .tickFormat("")
                 )
+            for (i in outlierBuses2){
+                for (idx in trips) {
+                    trip_bus_id = trips[idx][0];
+                    /*if(trip_bus_id == outlierBuses2[i]) {
+                        chart.append('svg:circle')
+                        .attr("class", "dot")
+                        .attr("r", 4.5)
+                        .attr("cy", 275-(trip_time/4))
+                        .attr("cx", 100 + 80*i)
+                        .on("mouseover", function(d, i) { d3.select(this).html("bla").style({"visibility": "visible"});})
+                        .on("mouseout", function(d, i) { d3.select(this).html("bla").style({"visibility": "hidden"});})
+                        .style("opacity", "1.0")
+                        .style("fill", "red"); */
+                    
+                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All" && outlierBuses2.indexOf(trip_bus_id) != -1)) {
+                        trip_time = trips[idx][1];
+                        if (!(idx in outlier_trips)){
+                            chart.append('svg:circle')
+                                .attr("class", "dotraw")
+                                .attr("r", 4.5)
+                                .attr("cy", yScale(trip_time))
+                                .attr("cx", 100 + 80*i);
+                        }
+						
+                    }
+                }
+                //Create X axis label   
+                chart.append("svg:text")
+                    .attr("x", 100 + 80*i )
+                    .attr("y",  320 )
+                    .attr("class", "xlabel")
+                    .style("text-anchor", "middle")
+                    .attr("font-size", "12px")
+                    .text(outlierBuses2[i]);
+                
+            }
+            for (i in outlierBuses2){
+                for (idx in trips) {
+                    trip_bus_id = trips[idx][0];
+
+                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All" && outlierBuses2.indexOf(trip_bus_id) != -1)) {
+                        trip_time = trips[idx][1];
+                        if (idx in outlier_trips){
+                            chart.append('svg:circle')
+                                .attr("class", "dotoutlier")
+                                .attr("r", 4.5)
+                                .attr("cy", yScale(trip_time))
+                                .attr("cx", 100 + 80*i);
+                        }
+
+                    }
+                }
+            }
+
+                
+                
+            
             
         }
         
