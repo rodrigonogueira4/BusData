@@ -24,6 +24,8 @@
                     <input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()" />
                     <label for="sortLineBarChart">Sort by number of outliers</label>
                 </div>
+                <br>
+                Line&nbsp;-&nbsp;Number of Ouliers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bus Id
                 <div class="barchartDiv">
                     <svg class="barchart"></svg>
                 </div>
@@ -35,17 +37,18 @@
                     <svg id="dayBarchart"></svg>
                 </div>
             </center>-->
-            <div style="margin-left: 10px;width: 1200px;height: 800px;float: left;">
-                <div style="width: 100%; height: 800px; overflow: hidden;">
+        
+            <div style="margin-left: 10px;width: 1250px;height: 870px;float: left;">
+                <div style="width: 100%; height: 835px; overflow: hidden;">
 
-                    <div style="width: 670px;height: 200px;float: left;">
+                    <div style="width: 700px;height: 200px;float: left;">
                         <div id="multiInlinePicker" ></div>
                     </div>
-                    <div style="width: 500px;height: 200px;float: left;">
+                    <div style="width: 550px;height: 220px;float: left;">
                         <svg id="timeBarchart"></svg>
                     </div>
                     <div >
-                        <div id="map" style="height: 800px"></div>
+                        <div id="map" style="height: 835px"></div>
                     </div> 
                 </div>
             </div>
@@ -125,7 +128,25 @@
         })
     </script>   
     <script type="text/javascript">
-
+    //Time Bar Chart
+    var timechart = d3.select("#timeBarchart");
+        
+    //Create Y axis label   
+    timechart.append("svg:text")
+        .attr("x", 300 )
+        .attr("y",  210 )
+        .style("text-anchor", "middle")
+        .text("Hour of the Day");
+      
+    //Create Y axis label   
+    timechart.append("svg:text")
+        .attr("x", -90 )
+        .attr("y",  15 )
+        .style("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .text("Number of Outliers");
+       
+        
     //Trip Time Chart
     var vis = d3.select("#tripchart"),
             WIDTH = 100,
@@ -728,14 +749,14 @@
                     //.range([5, height-5]);
 
                 var timechart = d3.select("#timeBarchart")
-                                .attr("width",100+ barWidth * timebarchart_data.length)
-                                .attr("height", height);
+                                .attr("width",120+ barWidth * timebarchart_data.length)
+                                .attr("height", 20+height);
                 timechart.selectAll("g").remove(); //remove all bars
                 
                 var timebar = timechart.selectAll("g")
                                 .data(timebarchart_data)
                                 .enter().append("g")
-                                .attr("transform", function(d, i) { return "translate(" + (50 + i * barWidth) + "," + (-10+height - yScale(d.number_of_outliers)) + ")"; });
+                                .attr("transform", function(d, i) { return "translate(" + (70 + i * barWidth) + "," + (-10+height - yScale(d.number_of_outliers)) + ")"; });
                 
                 timebar.append("rect")
                     .attr("height",  function(d) { return yScale(d.number_of_outliers); })
@@ -762,7 +783,7 @@
                                         d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                      });
                 
-                /*timebar.append("text")
+                timebar.append("text")
                     .attr("x", barWidth / 2)
                     .attr("y", function (d) { yScale(d.number_of_outliers); })
                     .attr("dx", ".8em")
@@ -774,20 +795,19 @@
                     .on("mouseout", function(d, i) {
                                        d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                    });
-                */
-                
+                 
                  var yAxis = d3.svg.axis()
                       .scale(yScale)
                       .orient("left");
                 timechart.append("svg:g")
                    .attr("class","axis")
-                   .attr("transform", "translate(" + (40) + ", " + (-5) + ")")
+                   .attr("transform", "translate(" + (60) + ", " + (-5) + ")")
                    .call(yAxis);
                 timechart.select(".axis")
                     .transition().duration(1500)
                     .call(yAxis);
                 
-               colorTimeBars();
+                 
             });
             
             
@@ -799,7 +819,7 @@
             chart.selectAll(".dotraw").remove(); //remove all dots in the chart
             chart.selectAll(".dotoutlier").remove(); //remove all dots in the chart
             chart.selectAll(".xlabel").remove(); //remove X labels
-            outlierBuses2 = ["All"].concat(outlierBuses);
+            outlierBuses2 = ["All buses line "+selectedLines[0]].concat(outlierBuses);
             
             //group trips by bus and trip
             trips = [];
@@ -863,6 +883,8 @@
                        .tickPadding(10)
                        .tickFormat("")
                 )
+            
+            //plot only raw points then outliers. This had to be made because z-index does not work on svg
             for (i in outlierBuses2){
                 for (idx in trips) {
                     trip_bus_id = trips[idx][0];
@@ -877,7 +899,7 @@
                         .style("opacity", "1.0")
                         .style("fill", "red"); */
                     
-                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All" && outlierBuses2.indexOf(trip_bus_id) != -1)) {
+                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All buses line "+selectedLines[0] && outlierBuses2.indexOf(trip_bus_id) != -1)) {
                         trip_time = trips[idx][1];
                         if (!(idx in outlier_trips)){
                             chart.append('svg:circle')
@@ -899,11 +921,12 @@
                     .text(outlierBuses2[i]);
                 
             }
+            //plot only outliers. This had to be made because z-index does not work on svg
             for (i in outlierBuses2){
                 for (idx in trips) {
                     trip_bus_id = trips[idx][0];
 
-                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All" && outlierBuses2.indexOf(trip_bus_id) != -1)) {
+                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All buses line "+selectedLines[0] && outlierBuses2.indexOf(trip_bus_id) != -1)) {
                         trip_time = trips[idx][1];
                         if (idx in outlier_trips){
                             chart.append('svg:circle')
