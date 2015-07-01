@@ -1,0 +1,27 @@
+import os
+import collections
+in_dir = "outliers/"
+out_file_per_day = "number_of_outliers_per_day.csv"
+files = [os.path.join(dp, f) for dp, _, filenames in os.walk(in_dir) for f in filenames]
+
+dic_num_per_day = {}
+dic_num_per_line = {}
+dic_num_per_line_hour = {}
+for in_file in files:
+    day_month = in_file.replace(in_dir,"").replace(".csv", "")
+    day, month = day_month.split("_")
+    #num_lines = sum(1 for line in open(in_file))
+    num_lines = 0
+    with open(in_file) as f:
+        rows = csv.DictReader(f, delimiter=',')
+        for row in rows.values():
+
+            num_lines += 1
+        dic_num_per_day[100*int(month)+int(day)] = str(num_lines-1) + "," + month + "/" + day +"\n"
+
+ordered = collections.OrderedDict(sorted(dic_num_per_day.items()))
+fout = open(out_file_per_day, "wb")
+fout.write("\"NumberOfOutliers\",\"Date\"\n")
+for value in ordered.values():
+    fout.write(value)
+fout.close()

@@ -36,7 +36,7 @@ lat_m, long_m = -22.9083, -43.1964#center of RJ coords
 day_m = 3600.*12.#mid_day in seconds
 net = caffe.Classifier('/home/rfn216/BusRio/deploy7.prototxt', '/work/rfn216/bus_rio/busrio7_iter_2000000.caffemodel')
 net.set_phase_test()
-net.set_mode_gpu()
+net.set_mode_cpu()
 y_pred =[]
 out_data = []
 dic_data={}

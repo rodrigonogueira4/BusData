@@ -1,3 +1,8 @@
+
+#USE THIS!!!! DO NOT USE VERIFY4.PY!! IT IS NOT WORKING
+#USE THIS!!!! DO NOT USE VERIFY4.PY!! IT IS NOT WORKING
+#USE THIS!!!! DO NOT USE VERIFY4.PY!! IT IS NOT WORKING
+
 import sys
 caffe_root = '/opt/caffe/'  # this file is expected to be in {caffe_root}/examples
 sys.path.insert(0, caffe_root + 'python')
