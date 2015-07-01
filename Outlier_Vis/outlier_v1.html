@@ -13,7 +13,7 @@
     </head>
     <body>
         <div style="width: 1700px;">
-            <div style="width: 400px;height: 800px;float: left;">
+            <div style="width: 400px;height: 1200px;float: left;">
                 <div style="width: 400px;height: 70px;float: left;">
                     <font size="5">RioBusData</font>
                     <br>
@@ -38,8 +38,8 @@
                 </div>
             </center>-->
         
-            <div style="margin-left: 10px;width: 1250px;height: 870px;float: left;">
-                <div style="width: 100%; height: 835px; overflow: hidden;">
+            <div style="margin-left: 10px;width: 1250px;height: 1220px;float: left;">
+                <div style="width: 100%; height: 1135px; overflow: hidden;">
 
                     <div style="width: 700px;height: 200px;float: left;">
                         <div id="multiInlinePicker" ></div>
@@ -47,15 +47,16 @@
                     <div style="width: 550px;height: 220px;float: left;">
                         <svg id="timeBarchart"></svg>
                     </div>
-                    <div >
-                        <div id="map" style="height: 835px"></div>
+                    <div>
+                        <div id="map" style="height: 615px"></div>
                     </div> 
+					<div style="width: 100%;height: 350px; overflow: hidden;">
+                         <svg id="tripchart" width="1000" height="350"></svg>
+                    </div>    
                 </div>
             </div>
         </div>
-        <div style="width: 100%; overflow: hidden;">
-                <svg id="tripchart" width="1000" height="350"></svg>
-        </div>    
+        
         <div id="outlierinfo"></div>
     </body>
 
@@ -324,9 +325,19 @@
 			{
 				if (outliersDict[key][1] > 0)
 				{
-				    $("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + outliersDict[key][1] / max_outlier_value + ")"});
+					var mapmin = 0;
+					var mapmax = Math.min(3000,max_outlier_value);
+					var value = Math.min(3000,outliersDict[key][1]);
+					var ratio = (outliersDict[key][1] - mapmin) / (mapmax - mapmin);
+					console.log(ratio); 
+					var b = Math.floor(255*(1-ratio));//Math.floor(180*(1 - ratio));
+					var r = Math.floor(255*ratio);//Math.floor(70 + 105*ratio);
+					var g = 0;//Math.floor(255*(1-ratio));//Math.floor(130*(1 - ratio));
+					color = "rgb(" + r + "," + g + "," + b + ")";
+				    $("." + outliersDict[key][0]).css({"background-color" : "rgba(0,0,255," + value / mapmax + ")"});
 				    //$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + ((outliersDict[key][1] / max_outlier_value) * 0.7) + ")"});
 				    //color = hsv2rgb(Math.floor((100 - ((outliersDict[key][1] / max_outlier_value) * 100)) * 120 / 100), Math.abs((((outliersDict[key][1] / max_outlier_value) * 100) - 50) / 50), 1);
+					
 					//$("." + outliersDict[key][0]).css({"background-color" : color});
 				}
 			}
@@ -783,7 +794,7 @@
                                         d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                      });
                 
-                timebar.append("text")
+                /*timebar.append("text")
                     .attr("x", barWidth / 2)
                     .attr("y", function (d) { yScale(d.number_of_outliers); })
                     .attr("dx", ".8em")
@@ -795,7 +806,7 @@
                     .on("mouseout", function(d, i) {
                                        d3.select(this.parentNode).select("rect").style({opacity: '1.0'});
                                    });
-                 
+                 */
                  var yAxis = d3.svg.axis()
                       .scale(yScale)
                       .orient("left");

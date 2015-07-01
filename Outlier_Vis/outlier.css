@@ -79,7 +79,7 @@
     .barchartDiv {
         float: left;
         overflow-y: scroll;
-        height: 710px;
+        height: 1000px;
         width: 300px;
     }
 
@@ -140,7 +140,7 @@
         position: relative;
         overflow-y: scroll;
         width: 100px;
-        height: 710px;
+        height: 1000px;
         cursor: default;
         margin: 0;
     }
