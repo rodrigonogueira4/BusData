@@ -948,7 +948,7 @@
         
         function loadPtsOutliers(redrawPoints) {
             
-            $("#outlierinfo").hide(); //hide selected oulier div
+            //$("#outlierinfo").hide(); //hide selected oulier div
             
             if (redrawPoints){
                 overlay_outliers.setMap(null);
@@ -1331,8 +1331,6 @@
                             "<b>End:</b>   " + d.value['TimeStampEnd'] + "<br>"+
                             "<b>Line:</b> " + d.value['Line'] + "<br>"+
                             "<b>Bus Id:</b> " + d.value['BusId']);
-                    $("#outlierinfo").show();
-                    
                     return d3.select(this).style("opacity", 1.0);
                 }else{
                     return d3.select(this).style("opacity", "0.5");
@@ -1346,6 +1344,8 @@
             d3.select(".busselected").classed("busselected", false);
             d3.select("#divBus"+busid).classed("busselected", true);
             d3.select("#divBus"+busid).style({opacity: 1.0});
+            
+            $("#outlierinfo").show();
             
 			addOutlierPath();
         }

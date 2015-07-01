@@ -153,8 +153,8 @@
         width: 200px;
         height: 100px;
         position: absolute; /*newly added*/
-        right: 20px; /*newly added*/
-        bottom: 180px;/*newly added*/
+        right: 200px; /*newly added*/
+        bottom: 120px;/*newly added*/
         z-index: 100;
     }		
 
