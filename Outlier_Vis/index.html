@@ -968,11 +968,6 @@
                     }
                 }
             }
-
-                
-                
-            
-            
         }
         
         function loadPtsOutliers(redrawPoints) {
@@ -1005,10 +1000,12 @@
                         monthday = datesdist[idx].split("/")
                         dates.push("outliers/" + monthday[1] + "_" + monthday[0] + ".csv");
                     }
+                    alert(dates);
                     loaddays();
                 });
                 
             }else{
+                
                 dates = outliersfileArray;
                 loaddays();
             }
