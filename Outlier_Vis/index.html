@@ -492,7 +492,7 @@
                         });
                         
                         //load trip-time chart. It must be inside the loadptsraw because the raw points are only loaded in the end of the function.
-                        loadTripTimes(listOfOutlierBuses);
+						loadTripTimes(listOfOutlierBuses);
                     }
 
                     for (idx in raw_data) {
@@ -852,6 +852,7 @@
                 bus_id = raw_data[idx][3];
                 timestamp = new Date(raw_data[idx][11].substring(0, 10) + "T" + raw_data[idx][11].substring(10, 18) + "+0000");
                 trip_time = +raw_data[idx][15];
+
                 direction = raw_data[idx][16];
                 if (!(bus_id in bus_dir)){
                     bus_dir[bus_id] = "";
@@ -881,9 +882,11 @@
 	
 			yScale.domain([Math.floor(min_trip_time), Math.ceil(max_trip_time+20)]);
 	
-			chart.select(".axis")
-				 .transition().duration(1500)
-				 .call(yAxis);
+			//---> AQUI
+			//chart.select(".axis")
+			//	 .transition().duration(1500)
+			//	 .call(yAxis);
+			//---> AQUI
           
             // function for the y grid lines
             function make_y_axis() {
@@ -922,11 +925,15 @@
                     if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All buses line "+selectedLines[0] && outlierBuses2.indexOf(trip_bus_id) != -1)) {
                         trip_time = trips[idx][1];
                         if (!(idx in outlier_trips)){
-                            chart.append('svg:circle')
-                                .attr("class", "dotraw")
-                                .attr("r", 4.5)
-                                .attr("cy", yScale(trip_time))
-                                .attr("cx", 100 + 80*i);
+							//console.log("aqui:");
+							//console.log(trip_time);
+							if (!(isNaN(trip_time))) {
+								chart.append('svg:circle')
+									.attr("class", "dotraw")
+									.attr("r", 4.5)
+									.attr("cy", yScale(trip_time))
+									.attr("cx", 100 + 80*i);
+							}
                         }
 						
                     }
@@ -949,11 +956,13 @@
                     if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All buses line "+selectedLines[0] && outlierBuses2.indexOf(trip_bus_id) != -1)) {
                         trip_time = trips[idx][1];
                         if (idx in outlier_trips){
-                            chart.append('svg:circle')
-                                .attr("class", "dotoutlier")
-                                .attr("r", 4.5)
-                                .attr("cy", yScale(trip_time))
-                                .attr("cx", 100 + 80*i);
+							if (!(isNaN(trip_time))) {
+								chart.append('svg:circle')
+									.attr("class", "dotoutlier")
+									.attr("r", 4.5)
+									.attr("cy", yScale(trip_time))
+									.attr("cx", 100 + 80*i);
+							}
                         }
 
                     }
