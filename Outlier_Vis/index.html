@@ -9,23 +9,18 @@
         <link rel="stylesheet" type="text/css" href="jquery.datepick.css"> 
         <script type="text/javascript" src="jquery.plugin.js"></script> 
         <script type="text/javascript" src="jquery.datepick.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="outlier.css"> 
+        <link rel="stylesheet" type="text/css" href="outlier.css">
+                <div style="width: 100%;height: 70px;float: left; font-family: Sans-Serif; text-align: center; color: DimGray">
+                   <h1>RioBusData | Visualization of Outlier Buses in Rio de Janeiro</h1>
+                    <!-- <font size="10">RioBusData | Visualization of Outlier Buses in the City Rio de Janeiro </font> -->
+<!--                     <font size="3">Visualization of Outlier Buses in the City Rio de Janeiro</font> -->
+                </div> 
     </head>
     <body>
-        <div style="width: 1700px;">
-            <div style="width: 400px;height: 1200px;float: left;">
-                <div style="width: 400px;height: 70px;float: left;">
-                    <font size="5">RioBusData</font>
-                    <br>
-                    <font size="3">Visualization of Outlier Buses in the City Rio de Janeiro</font>
-                </div>
-<!--                 <div id="sortLineBarChartDiv"> -->
-<!--                     <\!--<button type="button" id="btnSort" style="width:285px;" onclick="changeSortLineBarChart()">Sort by number of outliers</button>-\-> -->
-<!--                     <input type="checkbox" id="sortLineBarChart" onchange="changeSortLineBarChart()" /> -->
-<!--                     <label for="sortLineBarChart">Sort by number of outliers</label> -->
-<!--                 </div> -->
-                <br>
-                Line&nbsp;-&nbsp;Number of Outliers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bus Id
+      
+        <div style="width: 1700px;font-family: Sans-Serif;">
+   <div style="width: 400px;height: 1220px;float: left;color: DimGray">
+                <b>Lines&nbsp;-&nbsp;Number of Outliers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b><!-- Bus Id -->
                 <div class="barchartDiv">
                     <svg class="barchart"></svg>
                 </div>
@@ -39,19 +34,32 @@
             </center>-->
         
             <div style="margin-left: 10px;width: 1250px;height: 1220px;float: left;">
-                <div style="width: 100%; height: 1135px; overflow: hidden;">
+                <div style="width: 100%;">
 
                     <div style="width: 700px;height: 200px;float: left;">
+                        <div style="text-align: center; color: DimGray">
+                            <b><font size="3">Outliers by day</font></b>
+                        </div>
                         <div id="multiInlinePicker" ></div>
                     </div>
                     <div style="width: 550px;height: 220px;float: left;">
+                        <div style="text-align: center; color: DimGray">
+                            <b><font size="3">Outliers by hour</font></b>
+                        </div>
                         <svg id="timeBarchart"></svg>
                     </div>
                     <div>
+                        <div style="text-align: center; color: DimGray">
+                           <b><font size="3">Geographical locations</font></b>
+                        </div>                        
                         <div id="map" style="height: 615px"></div>
                     </div> 
-					<div style="width: 100%;height: 350px; overflow: hidden;">
-                         <svg id="tripchart" width="1000" height="350"></svg>
+					<div style="width: 100%;">
+
+                        <div style="text-align: center; color: DimGray">
+                           <b><font size="3">Trip times</font></b>
+                        </div>
+                         <svg id="tripchart" width="1000" height="650"></svg>
                     </div>    
                 </div>
             </div>
@@ -101,7 +109,7 @@
             multiSelect: 30, monthsToShow: 3, monthsToStep: 1, 
             defaultDate: '10/05/2013',
 			showOtherMonths: true,
-            prevText: 'Prev month', nextText: 'Next month'
+            prevText: 'Previous', nextText: 'Next'
             //onSelect:function(date){
             //}
           });
@@ -159,10 +167,10 @@
                 bottom: 20,
                 left: 80
             },
-            xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0, 1.0]),
+           
             yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0,600]),
-            xAxis = d3.svg.axis()
-                      .scale(xScale),
+            //xAxis = d3.svg.axis()
+            //          .scale(xScale),
             yAxis = d3.svg.axis()
                       .scale(yScale)
                       .orient("left");
@@ -182,6 +190,7 @@
         .attr("transform", "rotate(-90)")
         .text("Trip Time (in minutes)");
         
+
         function parseDate(datestr) {
             return Date.parse(datestr.substring(0, 19).replace(" ", "T"));
         }
@@ -336,7 +345,7 @@
 					var r = Math.floor(255*ratio);//Math.floor(70 + 105*ratio);
 					var g = 0;//Math.floor(255*(1-ratio));//Math.floor(130*(1 - ratio));
 					color = "rgb(" + r + "," + g + "," + b + ")";
-				    $("." + outliersDict[key][0]).css({"background-color" : "rgba(0,0,255," + value / mapmax + ")"});
+				    $("." + outliersDict[key][0]).css({"background-color" : "rgba(230,0,0," + value / mapmax + ")"});
 				    //$("." + outliersDict[key][0]).css({"background-color" : "rgba(255,0,0," + ((outliersDict[key][1] / max_outlier_value) * 0.7) + ")"});
 				    //color = hsv2rgb(Math.floor((100 - ((outliersDict[key][1] / max_outlier_value) * 100)) * 120 / 100), Math.abs((((outliersDict[key][1] / max_outlier_value) * 100) - 50) / 50), 1);
 					
@@ -440,9 +449,8 @@
                     });
                     
                     if (reloadIndividualBuses){
-                        var div_list = document.getElementById("busesOfLine");
-                        div_list.innerHTML = "";
-                        
+                        /*var div_list = document.getElementById("busesOfLine");
+                        div_list.innerHTML = "<font size=\"3\">Bus Id</font>";
                         for (var i=0; i<listOfBuses.length; i++)
                         {
                             if (listOfOutlierBuses.indexOf(listOfBuses[i]) != -1)
@@ -466,7 +474,7 @@
                                     div.className = "busDiv";
                                 }                            
                             }
-                        }
+                        }*/
                         
                         $(".busDiv").hover(function() {
                             $(this).css("background", "green");
@@ -477,7 +485,7 @@
                         });
                         
                         $(".busDiv").mouseout(function() {
-                            $(this).css("background", "steelblue");
+                            $(this).css("background", "red");
                         });
 
                         $(".busOutlierDiv").mouseout(function() {
@@ -492,7 +500,7 @@
                         });
                         
                         //load trip-time chart. It must be inside the loadptsraw because the raw points are only loaded in the end of the function.
-						loadTripTimes(listOfOutlierBuses);
+						            loadTripTimes(listOfOutlierBuses);
                     }
 
                     for (idx in raw_data) {
@@ -761,6 +769,10 @@
                     .domain([0, d3.max(timebarchart_data, function(d) { return d.number_of_outliers*1.05; })])
                     .range([5, height-5]);
 
+                var yTextScale = d3.scale.linear()
+                    .domain([0, d3.max(timebarchart_data, function(d) { return d.number_of_outliers*1.05; })])
+                    .range([height-5, 5]);
+
                 var timechart = d3.select("#timeBarchart")
                                 .attr("width",120+ barWidth * timebarchart_data.length)
                                 .attr("height", 20+height);
@@ -829,8 +841,8 @@
             chart.selectAll(".dotraw").remove(); //remove all dots in the chart
             chart.selectAll(".dotoutlier").remove(); //remove all dots in the chart
             chart.selectAll(".xlabel").remove(); //remove X labels
-            outlierBuses2 = ["All buses line "+selectedLines[0]].concat(outlierBuses);
-            
+            outlierBuses2 = ["All buses"].concat(outlierBuses);
+            //console.log("***" + outlierBuses2);
             //group trips by bus and trip
             trips = [];
             bus_dir = {};
@@ -839,11 +851,13 @@
             outlier_trips = {};
             j = 0;
             for (idx in raw_data) {
+                
                 bus_id = raw_data[idx][3];
                 timestamp = new Date(raw_data[idx][11].substring(0, 10) + "T" + raw_data[idx][11].substring(10, 18) + "+0000");
-                trip_time = +raw_data[idx][15];
-
-                direction = raw_data[idx][16];
+                //trip_time = +raw_data[idx][15];
+                //direction = raw_data[idx][16];
+                trip_time = +raw_data[idx][13];
+                direction = raw_data[idx][14];
                 if (!(bus_id in bus_dir)){
                     bus_dir[bus_id] = "";
                 }
@@ -853,11 +867,11 @@
                     if (trip_time > max_trip_time){
                         max_trip_time = trip_time;
                     }
-					if (min_trip_time == -1 || min_trip_time > trip_time)
+					if (min_trip_time == -1 || min_trip_time > trip_time) {
 						min_trip_time = trip_time;
-                    j += 1;
-                }
-                
+            j += 1;
+          }
+          }                
                 //check if this is an outlier
                 for (idx2 in outlier_data){
                     timeStampOut = new Date(outlier_data[idx2].TimeStamp.substring(0, 19).replace(" ", "T")+ "+0000");
@@ -869,9 +883,13 @@
                     }
                 }
             }
+            	
+
+			//yScale.domain([Math.floor(min_trip_time), Math.ceil(max_trip_time+20)]);
+      yScale.domain([0, Math.ceil(max_trip_time+20)]);
 	
-			yScale.domain([Math.floor(min_trip_time), Math.ceil(max_trip_time+20)]);
-	
+      //xScale = d3.scale.ordinal().range([MARGINS.left, WIDTH - MARGINS.right]).domain([0.0, 1.0]),
+
 			//---> AQUI
 			//chart.select(".axis")
 			//	 .transition().duration(1500)
@@ -885,6 +903,14 @@
                   .orient("left")
                   .ticks(5)
             }
+
+            function make_x_axis() {
+              return d3.svg.axis()
+                  .scale(yScale)
+                  .orient("left")
+                  .ticks(5)
+            }
+
             //remove existing grid lines
             // Draw the y Grid lines
             chart.selectAll("line.tick").remove();
@@ -901,21 +927,10 @@
             for (i in outlierBuses2){
                 for (idx in trips) {
                     trip_bus_id = trips[idx][0];
-                    /*if(trip_bus_id == outlierBuses2[i]) {
-                        chart.append('svg:circle')
-                        .attr("class", "dot")
-                        .attr("r", 4.5)
-                        .attr("cy", 275-(trip_time/4))
-                        .attr("cx", 100 + 80*i)
-                        .on("mouseover", function(d, i) { d3.select(this).html("bla").style({"visibility": "visible"});})
-                        .on("mouseout", function(d, i) { d3.select(this).html("bla").style({"visibility": "hidden"});})
-                        .style("opacity", "1.0")
-                        .style("fill", "red"); */
-                    
-                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All buses line "+selectedLines[0] && outlierBuses2.indexOf(trip_bus_id) != -1)) {
+                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All buses" && outlierBuses2.indexOf(trip_bus_id) != -1)) {
                         trip_time = trips[idx][1];
                         if (!(idx in outlier_trips)){
-							//console.log("aqui:");
+							console.log(outlierBuses2[i]);
 							//console.log(trip_time);
 							if (!(isNaN(trip_time))) {
 								chart.append('svg:circle')
@@ -928,10 +943,11 @@
 						
                     }
                 }
-                //Create X axis label   
+
+                //Create X axis label
                 chart.append("svg:text")
                     .attr("x", 100 + 80*i )
-                    .attr("y",  320 )
+                    .attr("y",  320)
                     .attr("class", "xlabel")
                     .style("text-anchor", "middle")
                     .attr("font-size", "12px")
@@ -940,10 +956,11 @@
             }
             //plot only outliers. This had to be made because z-index does not work on svg
             for (i in outlierBuses2){
+                
                 for (idx in trips) {
                     trip_bus_id = trips[idx][0];
 
-                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All buses line "+selectedLines[0] && outlierBuses2.indexOf(trip_bus_id) != -1)) {
+                    if(trip_bus_id == outlierBuses2[i] || (outlierBuses2[i] == "All buses" && outlierBuses2.indexOf(trip_bus_id) != -1)) {
                         trip_time = trips[idx][1];
                         if (idx in outlier_trips){
 							if (!(isNaN(trip_time))) {
@@ -951,7 +968,7 @@
 									.attr("class", "dotoutlier")
 									.attr("r", 4.5)
 									.attr("cy", yScale(trip_time))
-									.attr("cx", 100 + 80*i);
+									.attr("cx", 100 + 80*i); //100 + 80*i);
 							}
                         }
 
@@ -1266,10 +1283,10 @@
                     .attr("height", barHeight - 1)
                     .on("click", function(d, i) {selectLine(d, this);})
                     .on("mouseover", function(d, i) {
-                                        d3.select(this).style({opacity: '0.6'});
+                                        d3.select(this).style({opacity: '0.4'});
                                         })
                     .on("mouseout", function(d, i) {
-                                        d3.select(this).style({opacity: '1.0'});
+                                        d3.select(this).style({opacity: '0.8'});
                                      });
 
                 linebars.append("text")
@@ -1312,7 +1329,7 @@
             d3.select(".vselected").style({fill: "steelblue"});
             d3.select(".vselected").classed("vselected", false);
             d3.select(refobj).classed("vselected", true);
-            d3.select(refobj).style({fill: 'red'});
+            d3.select(refobj).style({fill: "red"});
             fields = d.key.split("/");
             dateFileArray = [fields[1] + "-" + fields[0] + "-2013"];
             outliersfile = "outliers/" + fields[1] + "_" + fields[0] + ".csv";
@@ -1323,10 +1340,10 @@
         }
         
         function selectLine(d, refobj){
-            d3.select(".selectedLine").style({fill: "steelblue"});
+            d3.select(".selectedLine").style({fill: "rgb(230, 0, 0)"});
             d3.select(".selectedLine").classed("selectedLine", false);
             d3.select(refobj).classed("selectedLine", true);
-            d3.select(refobj).style({fill: 'red'});
+            d3.select(refobj).style({fill:"rgb(120, 0, 0)"});
             selectedLines = [d.key];
             selectedBusId = "";
             loadTimeBarChart();
@@ -1361,7 +1378,7 @@
             
             selectedBusId = busid; 
             loadPtsOutliers(false);
-            loadPtsRaw(false, false);
+            loadPtsRaw(false, true);
             d3.select(".busselected").style({opacity: 0.4});
             d3.select(".busselected").classed("busselected", false);
             d3.select("#divBus"+busid).classed("busselected", true);
@@ -1378,14 +1395,14 @@
             d3.select(refobj).style({fill: "lightgray"});
             delete selectedHours[hour];
           } else {
-            d3.select(refobj).style({fill: "steelblue"});
+            d3.select(refobj).style({fill: "rgb(230, 0, 0)"});
             selectedHours[hour] = 0;
           }
 
           for (i in d3.select("#timeBarchart").selectAll("rect")[0]){
             refobj = d3.select("#timeBarchart").selectAll("rect")[0][i];
             if (i != hour) {
-               d3.select(refobj).style({fill: "steelblue"});
+               d3.select(refobj).style({fill: "rgb(230, 0, 0)"});
             }
           }
         }
