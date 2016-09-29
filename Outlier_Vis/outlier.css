@@ -52,7 +52,7 @@
       stroke-width: 1;
     }
     .outliers circle {
-      fill: red;
+      fill: rgb(230, 0, 0);
       stroke: black;
       stroke-width: 0.2px;
     }
@@ -67,7 +67,7 @@
     }
 
     .barchart rect {
-        fill: steelblue;
+        fill: rgb(230, 0, 0); //steelblue;
     }
 
     .barchart text {
@@ -100,7 +100,7 @@
     }
 
     #timeBarchart rect {
-        fill: steelblue;
+        fill: rgb(230, 0, 0);
         opacity: 1.0;
     }
 
